@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Our Memory</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div class="overlay" id="overlay"></div>
+        
+        <div class="sidebar" id="sidebar">
+            <div class="user-info">
+                <div class="user-avatar">❤️</div>
+                <div>My Princess</div>
+            </div>
+            <ul class="menu-list">
+                <li class="menu-item active-menu" id="menu-home">
+                    <span class="menu-icon">🏠</span> 首页
+                </li>
+                <li class="menu-item" id="menu-lab">
+                    <span class="menu-icon">🧪</span> 实验室
+                </li>
+                <li class="menu-item" onclick="alert('功能开发中...')">
+                    <span class="menu-icon">📷</span> 私密相册
+                </li>
+            </ul>
+        </div>
+
+        <div id="page-login" class="page active">
+            <div class="login-card">
+                <h2>🔒 专属空间</h2>
+                <p style="color: #636e72; font-size: 14px;">故事开始于何时呢 (例:0520)</p>
+                <input type="password" id="passcode" class="login-input" placeholder="****" maxlength="4">
+                <button class="btn-primary" id="btn-unlock">Unlock</button>
+            </div>
+        </div>
+
+        <div id="page-home" class="page">
+            <div class="header">
+                <div class="menu-btn" id="btn-toggle-sidebar">☰</div>
+                <h2 id="header-title">For You</h2>
+            </div>
+
+            <div class="scroll-content">
+                <div id="view-home" class="content-view">
+                    <div class="timer-card">
+                        <p>我们已经相爱</p>
+                        <h1 id="days-count">0</h1>
+                        <p>DAYS</p>
+                    </div>
+
+                    <div id="tab-timeline" class="content-section active-content">
+                        <div class="timeline-hint">下拉查看回忆 ↓</div>
+                        <div class="timeline-item">
+                            <div class="t-date">2023.05.20</div>
+                            <div class="t-content">故事开始的地方。</div>
+                        </div>
+                         <div class="timeline-item">
+                            <div class="t-date">2023.12.25</div>
+                            <div class="t-content">一起过的第一个圣诞节。</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="t-date">NOW</div>
+                            <div class="t-content">未完待续...</div>
+                        </div>
+                    </div>
+
+                    <div id="tab-letter" class="content-section">
+                        <div class="typewriter-box">
+                            <span id="typewriter-text"></span><span class="cursor"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-lab" class="content-view" style="display: none;">
+                    <div style="padding: 20px;">
+                        <h3>🧪 程序员的实验室</h3>
+                        <p style="color: #888; font-size: 14px;">为你开发的小工具。</p>
+                        <div class="lab-grid">
+                            <div class="lab-item" onclick="alert('随机数：' + Math.floor(Math.random()*6+1))">🎲 掷骰子</div>
+                            <div class="lab-item">📅 日历</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-tabs" id="bottom-nav">
+                <div class="nav-item active-tab" data-tab="timeline">回忆录</div>
+                <div class="nav-item" data-tab="letter">情书</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
