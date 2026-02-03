@@ -1,8 +1,7 @@
 // --- 配置中心 (只改这里) ---
 const CONFIG = {
-    passcode: "0121",           // 你的密码
-    startDate: "2026-01-21",    // 你们的纪念日
-    // 你的情书 (支持 HTML)
+    passcode: atob("MDEyMQ=="),           
+    startDate: "2026-01-21",    
     loveLetter: "亲爱的：<br><br>这是我为你写的代码。<br>变量是我，常量是你。<br>循环是日复一日的喜欢。<br><br>Forever Love. ❤️"
 };
 
