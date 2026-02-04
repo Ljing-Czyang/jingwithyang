@@ -2,7 +2,7 @@
 const CONFIG = {
     passcode: atob("MDEyMQ=="),           
     startDate: "2026-01-21",    
-    loveLetter: "亲爱的：<br><br>这是我为你写的代码。<br>变量是我，常量是你。<br>循环是日复一日的喜欢。<br><br>Forever Love. ❤️"
+    loveLetter: "我不擅长写情话，<br>但我只想把你和我的每一天，<br>都按一次 Ctrl+S（保存）。<br><br>Forever Love. ❤️"
 };
 
 // --- DOM 元素获取 (解耦逻辑) ---
