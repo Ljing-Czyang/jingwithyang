@@ -279,11 +279,56 @@ class CoupleCalendar {
         const currentDate = new Date(dateStr);
         const days = Math.floor((currentDate - startDate) / (1000 * 60 * 60 * 24));
         
-        if (days > 0) {
-            message += `\n\n💕 恋爱第 ${days} 天`;
+        let html = `
+            <div class="date-detail-modal">
+                <div class="date-detail-content">
+                    <div class="date-detail-header">
+                        <h3>📅 ${dateStr}</h3>
+                        <button onclick="this.closest('.date-detail-modal').remove()">✕</button>
+                    </div>
+                    <div class="date-detail-body">
+        `;
+        
+        if (specialDate) {
+            html += `
+                <div class="date-detail-item special">
+                    <span class="date-detail-icon">${specialDate.title.split(' ')[0]}</span>
+                    <span class="date-detail-text">${specialDate.title.substring(2)}</span>
+                </div>
+            `;
         }
         
-        alert(message);
+        if (event) {
+            html += `
+                <div class="date-detail-item">
+                    <span class="date-detail-icon">📝</span>
+                    <span class="date-detail-text">${event.title}</span>
+                </div>
+            `;
+        }
+        
+        if (days > 0) {
+            html += `
+                <div class="date-detail-item love-days">
+                    <span class="date-detail-icon">💕</span>
+                    <span class="date-detail-text">恋爱第 <strong>${days}</strong> 天</span>
+                </div>
+            `;
+        }
+        
+        if (!specialDate && !event && days <= 0) {
+            html += `<div class="date-detail-empty">暂无记录</div>`;
+        }
+        
+        html += `
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        const modal = document.createElement('div');
+        modal.innerHTML = html;
+        document.body.appendChild(modal);
     }
     
     formatDate(date) {
