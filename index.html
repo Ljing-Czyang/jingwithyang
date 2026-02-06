@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Our Memory</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="src/styles/main.css">
 </head>
 <body>
-
     <div class="app-container">
-        
+        <!-- 遮罩层 -->
         <div class="overlay" id="overlay"></div>
         
+        <!-- 侧边栏 -->
         <div class="sidebar" id="sidebar">
             <div class="user-info">
                 <div class="user-avatar">❤️</div>
@@ -30,6 +30,7 @@
             </ul>
         </div>
 
+        <!-- 登录页面 -->
         <div id="page-login" class="page active">
             <div class="login-card">
                 <h2>🔒 专属空间</h2>
@@ -39,6 +40,7 @@
             </div>
         </div>
 
+        <!-- 主页面 -->
         <div id="page-home" class="page">
             <div class="header">
                 <div class="menu-btn" id="btn-toggle-sidebar">☰</div>
@@ -46,6 +48,7 @@
             </div>
 
             <div class="scroll-content">
+                <!-- 首页视图 -->
                 <div id="view-home" class="content-view">
                     <div class="timer-card">
                         <p>我们已经相爱</p>
@@ -76,6 +79,7 @@
                     </div>
                 </div>
 
+                <!-- 百宝库视图 -->
                 <div id="view-lab" class="content-view" style="display: none;">
                     <div style="padding: 20px;">
                         <h3>🎁 来看看有什么呢</h3>
@@ -88,6 +92,7 @@
                 </div>
             </div>
 
+            <!-- 底部导航 -->
             <div class="nav-tabs" id="bottom-nav">
                 <div class="nav-item active-tab" data-tab="timeline">回忆录</div>
                 <div class="nav-item" data-tab="letter">情书</div>
@@ -95,6 +100,14 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- JavaScript文件加载 -->
+    <script src="src/utils/config.js"></script>
+    <script src="src/utils/dom.js"></script>
+    <script src="src/utils/helpers.js"></script>
+    <script src="src/features/login/login.js"></script>
+    <script src="src/features/home/home.js"></script>
+    <script src="src/features/calendar/calendar.js"></script>
+    <script src="src/features/dice/dice.js"></script>
+    <script src="src/app.js"></script>
 </body>
 </html>
