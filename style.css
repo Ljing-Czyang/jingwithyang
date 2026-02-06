@@ -282,6 +282,7 @@ body {
     justify-content: center;
     align-items: center;
     z-index: 2000;
+    -webkit-overflow-scrolling: touch;
 }
 
 .date-detail-content {
@@ -290,7 +291,45 @@ body {
     padding: 25px;
     width: 90%;
     max-width: 350px;
+    max-height: 80vh;
+    overflow-y: auto;
     animation: slideUp 0.3s;
+    -webkit-transform: translateZ(0);
+}
+
+@media (max-width: 480px) {
+    .date-detail-content {
+        width: 95%;
+        padding: 20px;
+        max-height: 75vh;
+        border-radius: 15px;
+    }
+    
+    .date-detail-header {
+        margin-bottom: 15px;
+        padding-bottom: 12px;
+    }
+    
+    .date-detail-header h3 {
+        font-size: 16px;
+    }
+    
+    .date-detail-item {
+        padding: 12px;
+        gap: 10px;
+    }
+    
+    .date-detail-icon {
+        font-size: 20px;
+    }
+    
+    .date-detail-text {
+        font-size: 13px;
+    }
+    
+    .date-detail-item strong {
+        font-size: 16px;
+    }
 }
 
 .date-detail-header {
