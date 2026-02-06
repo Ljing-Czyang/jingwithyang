@@ -62,7 +62,7 @@ class HomeFeature {
             els.headerTitle.innerText = "For You";
         } else {
             els.bottomNav.style.display = 'none';
-            els.headerTitle.innerText = "🎁 百宝库";
+            els.headerTitle.innerText = "百宝库";
         }
     }
 
