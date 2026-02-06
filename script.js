@@ -5,13 +5,14 @@ const CONFIG = {
     loveLetter: "我不擅长写情话，<br>但我只想把你和我的每一天，<br>都按一次 Ctrl+S（保存）。<br><br>Forever Love. ❤️",
     specialDates: [
         { date: "2026-01-21", title: "💕 我们在一起", type: "start" },
-        { date: "2026-02-14", title: "💝 情人节", type: "holiday" },
+        { date: "2026-02-25", title: "💝 第一次约会" },
         { date: "2026-05-20", title: "❤️ 520", type: "special" },
-        { date: "2026-12-25", title: "🎄 圣诞节", type: "holiday" }
+
     ],
     monthlyAnniversary: 21,
     events: [
-        { date: "2026-02-25", title: "第一次约会" }
+        { date: "2026-02-14", title: "情人节", type: "holiday" },
+        { date: "2026-12-25", title: "圣诞节", type: "holiday" }
     ]
 };
 
@@ -359,7 +360,14 @@ class DiceGame {
     }
     
     roll() {
+        // 如果已经在掷骰子中，直接返回
         if (this.rolling) return;
+        
+        // 检查是否已经有骰子模态框存在
+        const existingModal = document.querySelector('.dice-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
         
         this.rolling = true;
         
@@ -390,7 +398,7 @@ class DiceGame {
     }
     
     startRolling() {
-        if (!this.rolling) return;
+        this.rolling = true;
         
         const diceResult = document.getElementById('dice-result');
         const rollBtn = document.getElementById('dice-roll-btn');

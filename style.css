@@ -214,9 +214,10 @@ body {
 }
 
 .calendar-day.today {
-    background: var(--primary-color);
+    background: linear-gradient(135deg, #667eea 0%, #9767c8 100%);
     color: white;
     font-weight: bold;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
 .calendar-day.special {
@@ -295,6 +296,7 @@ body {
     overflow-y: auto;
     animation: slideUp 0.3s;
     -webkit-transform: translateZ(0);
+    transform: translateZ(0);
 }
 
 @media (max-width: 480px) {
