@@ -2,7 +2,17 @@
 const CONFIG = {
     passcode: atob("MDEyMQ=="),           
     startDate: "2026-01-21",    
-    loveLetter: "我不擅长写情话，<br>但我只想把你和我的每一天，<br>都按一次 Ctrl+S（保存）。<br><br>Forever Love. ❤️"
+    loveLetter: "我不擅长写情话，<br>但我只想把你和我的每一天，<br>都按一次 Ctrl+S（保存）。<br><br>Forever Love. ❤️",
+    specialDates: [
+        { date: "2026-01-21", title: "💕 我们在一起", type: "start" },
+        { date: "2026-02-14", title: "💝 情人节", type: "holiday" },
+        { date: "2026-05-20", title: "❤️ 520", type: "special" },
+        { date: "2026-12-25", title: "🎄 圣诞节", type: "holiday" }
+    ],
+    monthlyAnniversary: 21,
+    events: [
+        { date: "2026-01-21", title: "第一次约会" }
+    ]
 };
 
 // --- DOM 元素获取 (解耦逻辑) ---
@@ -133,3 +143,165 @@ function startTypewriter() {
         setTimeout(startTypewriter, 100);
     }
 }
+
+class CoupleCalendar {
+    constructor() {
+        this.currentDate = new Date();
+        this.container = null;
+    }
+    
+    show() {
+        const calendarHTML = this.render();
+        
+        const modal = document.createElement('div');
+        modal.className = 'calendar-modal';
+        modal.innerHTML = `
+            <div class="calendar-modal-content">
+                <div class="calendar-modal-header">
+                    <h3>📅 我们的日历</h3>
+                    <button onclick="this.closest('.calendar-modal').remove()">✕</button>
+                </div>
+                ${calendarHTML}
+                <div class="calendar-events">
+                    <h4>📌 重要日期</h4>
+                    ${this.renderSpecialDates()}
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    }
+    
+    render() {
+        const year = this.currentDate.getFullYear();
+        const month = this.currentDate.getMonth();
+        
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const startDayOfWeek = firstDay.getDay();
+        
+        let html = `
+            <div class="calendar-header">
+                <button onclick="calendar.changeMonth(-1)">◀</button>
+                <span>${year}年${month + 1}月</span>
+                <button onclick="calendar.changeMonth(1)">▶</button>
+            </div>
+            <div class="calendar-grid">
+                <div class="calendar-day-header">日</div>
+                <div class="calendar-day-header">一</div>
+                <div class="calendar-day-header">二</div>
+                <div class="calendar-day-header">三</div>
+                <div class="calendar-day-header">四</div>
+                <div class="calendar-day-header">五</div>
+                <div class="calendar-day-header">六</div>
+        `;
+        
+        for (let i = 0; i < startDayOfWeek; i++) {
+            html += '<div class="calendar-day empty"></div>';
+        }
+        
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(year, month, day);
+            const dateStr = this.formatDate(date);
+            
+            const isToday = this.isSameDay(date, new Date());
+            const isSpecial = this.isSpecialDate(dateStr);
+            const isAnniversary = day === CONFIG.monthlyAnniversary;
+            
+            let classes = 'calendar-day';
+            if (isToday) classes += ' today';
+            if (isSpecial) classes += ' special';
+            if (isAnniversary) classes += ' anniversary';
+            
+            html += `<div class="${classes}" onclick="calendar.showDateDetails('${dateStr}')">${day}</div>`;
+        }
+        
+        html += '</div>';
+        
+        return html;
+    }
+    
+    changeMonth(delta) {
+        this.currentDate.setMonth(this.currentDate.getMonth() + delta);
+        this.updateCalendar();
+    }
+    
+    updateCalendar() {
+        const calendarContent = document.querySelector('.calendar-modal-content');
+        if (calendarContent) {
+            const newCalendar = this.render();
+            calendarContent.innerHTML = `
+                <div class="calendar-modal-header">
+                    <h3>📅 我们的日历</h3>
+                    <button onclick="this.closest('.calendar-modal').remove()">✕</button>
+                </div>
+                ${newCalendar}
+                <div class="calendar-events">
+                    <h4>📌 重要日期</h4>
+                    ${this.renderSpecialDates()}
+                </div>
+            `;
+        }
+    }
+    
+    renderSpecialDates() {
+        let html = '<div class="special-dates-list">';
+        
+        CONFIG.specialDates.forEach(item => {
+            html += `
+                <div class="special-date-item">
+                    <span class="special-date-title">${item.title}</span>
+                    <span class="special-date-date">${item.date}</span>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        return html;
+    }
+    
+    showDateDetails(dateStr) {
+        const specialDate = CONFIG.specialDates.find(d => d.date === dateStr);
+        const event = CONFIG.events.find(e => e.date === dateStr);
+        
+        let message = `📅 ${dateStr}`;
+        
+        if (specialDate) {
+            message += `\n\n${specialDate.title}`;
+        }
+        
+        if (event) {
+            message += `\n\n${event.title}`;
+        }
+        
+        const startDate = new Date(CONFIG.startDate);
+        const currentDate = new Date(dateStr);
+        const days = Math.floor((currentDate - startDate) / (1000 * 60 * 60 * 24));
+        
+        if (days > 0) {
+            message += `\n\n💕 恋爱第 ${days} 天`;
+        }
+        
+        alert(message);
+    }
+    
+    formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+    
+    isSameDay(date1, date2) {
+        return date1.getFullYear() === date2.getFullYear() &&
+               date1.getMonth() === date2.getMonth() &&
+               date1.getDate() === date2.getDate();
+    }
+    
+    isSpecialDate(dateStr) {
+        return CONFIG.specialDates.some(d => d.date === dateStr);
+    }
+}
+
+const calendar = new CoupleCalendar();
