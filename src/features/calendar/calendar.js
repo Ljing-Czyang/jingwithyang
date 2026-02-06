@@ -3,6 +3,20 @@ class CoupleCalendar {
         this.currentDate = new Date();
     }
 
+    renderCalendarView() {
+        const container = document.getElementById('calendar-container');
+        if (container) {
+            container.innerHTML = `
+                <h3>📅 我们的日历</h3>
+                ${this.render()}
+                <div class="calendar-events">
+                    <h4>📌 重要日期</h4>
+                    ${this.renderSpecialDates()}
+                </div>
+            `;
+        }
+    }
+
     show() {
         const calendarHTML = this.render();
         
@@ -95,6 +109,8 @@ class CoupleCalendar {
                     ${this.renderSpecialDates()}
                 </div>
             `;
+        } else {
+            this.renderCalendarView();
         }
     }
 

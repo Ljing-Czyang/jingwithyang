@@ -406,6 +406,11 @@ body {
     color: #b2bec3;
 }
 
+#calendar-container h3 {
+    margin: 0 0 20px 0;
+    color: var(--primary-color);
+}
+
 .date-detail-modal {
     position: fixed;
     top: 0;

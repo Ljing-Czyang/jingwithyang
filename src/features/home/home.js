@@ -60,9 +60,13 @@ class HomeFeature {
         if (viewName === 'home') {
             els.bottomNav.style.display = 'flex';
             els.headerTitle.innerText = "For You";
-        } else {
+        } else if (viewName === 'lab') {
             els.bottomNav.style.display = 'none';
             els.headerTitle.innerText = "百宝库";
+        } else if (viewName === 'calendar') {
+            els.bottomNav.style.display = 'none';
+            els.headerTitle.innerText = "📅 日历";
+            calendar.renderCalendarView();
         }
     }
 

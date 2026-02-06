@@ -24,6 +24,9 @@
                 <li class="menu-item" id="menu-lab">
                     <span class="menu-icon">🎁</span> 境和扬的百宝库
                 </li>
+                <li class="menu-item" id="menu-calendar">
+                    <span class="menu-icon">📅</span> 日历
+                </li>
                 <li class="menu-item" onclick="alert('功能开发中...')">
                     <span class="menu-icon">📷</span> 私密相册
                 </li>
@@ -86,9 +89,13 @@
                         <p style="color: #888; font-size: 14px;">为你开发的小工具。</p>
                         <div class="lab-grid">
                             <div class="lab-item" onclick="diceGame.roll()">🎲 掷骰子</div>
-                            <div class="lab-item" onclick="calendar.show()">📅 日历</div>
                         </div>
                     </div>
+                </div>
+
+                <!-- 日历视图 -->
+                <div id="view-calendar" class="content-view" style="display: none;">
+                    <div id="calendar-container" style="padding: 20px;"></div>
                 </div>
             </div>
 
