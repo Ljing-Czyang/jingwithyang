@@ -11,7 +11,7 @@ const CONFIG = {
     ],
     monthlyAnniversary: 21,
     events: [
-        { date: "2026-01-21", title: "第一次约会" }
+        { date: "2026-02-25", title: "第一次约会" }
     ]
 };
 
@@ -378,20 +378,22 @@ class DiceGame {
                     <div class="dice-info">
                         <p class="dice-hint">点击按钮开始掷骰子</p>
                     </div>
-                    <button class="dice-roll-btn" onclick="diceGame.startRolling()">🎯 掷骰子</button>
+                    <button class="dice-roll-btn" id="dice-roll-btn">🎯 掷骰子</button>
                 </div>
             </div>
         `;
         
         document.body.appendChild(modal);
+        
+        const rollBtn = document.getElementById('dice-roll-btn');
+        rollBtn.addEventListener('click', () => this.startRolling());
     }
     
     startRolling() {
-        if (this.rolling) return;
+        if (!this.rolling) return;
         
-        this.rolling = true;
         const diceResult = document.getElementById('dice-result');
-        const rollBtn = document.querySelector('.dice-roll-btn');
+        const rollBtn = document.getElementById('dice-roll-btn');
         const hint = document.querySelector('.dice-hint');
         
         rollBtn.disabled = true;
@@ -415,7 +417,7 @@ class DiceGame {
     
     finalRoll() {
         const diceResult = document.getElementById('dice-result');
-        const rollBtn = document.querySelector('.dice-roll-btn');
+        const rollBtn = document.getElementById('dice-roll-btn');
         const hint = document.querySelector('.dice-hint');
         
         const result = Math.floor(Math.random() * 6) + 1;
