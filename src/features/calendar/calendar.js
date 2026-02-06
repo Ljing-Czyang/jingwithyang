@@ -100,7 +100,7 @@ class CoupleCalendar {
             const newCalendar = this.render();
             calendarContent.innerHTML = `
                 <div class="calendar-modal-header">
-                    <h3>📅 我们的日历</h3>
+                    <h3>📅 我们的时光</h3>
                     <button onclick="this.closest('.calendar-modal').remove()">✕</button>
                 </div>
                 ${newCalendar}
