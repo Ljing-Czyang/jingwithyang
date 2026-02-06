@@ -3,6 +3,7 @@ class DiceGame {
         this.rolling = false;
         this.diceValues = [1, 2, 3, 4, 5, 6];
         this.diceEmojis = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+        this.currentInterval = null;
     }
 
     roll() {
@@ -21,7 +22,7 @@ class DiceGame {
             <div class="dice-content">
                 <div class="dice-header">
                     <h3>🎲 掷骰子</h3>
-                    <button onclick="this.closest('.dice-modal').remove()">✕</button>
+                    <button onclick="this.closest('.dice-modal').remove(); diceGame.clearInterval();">✕</button>
                 </div>
                 <div class="dice-body">
                     <div class="dice-display">
@@ -38,15 +39,29 @@ class DiceGame {
         document.body.appendChild(modal);
         
         const rollBtn = document.getElementById('dice-roll-btn');
-        rollBtn.addEventListener('click', () => this.startRolling());
+        if (rollBtn) {
+            rollBtn.addEventListener('click', () => this.startRolling());
+        }
+    }
+
+    clearInterval() {
+        if (this.currentInterval) {
+            clearInterval(this.currentInterval);
+            this.currentInterval = null;
+        }
     }
 
     startRolling() {
-        this.rolling = true;
-        
         const diceResult = document.getElementById('dice-result');
         const rollBtn = document.getElementById('dice-roll-btn');
         const hint = document.querySelector('.dice-hint');
+        
+        if (!diceResult || !rollBtn || !hint) {
+            this.clearInterval();
+            return;
+        }
+        
+        this.rolling = true;
         
         rollBtn.disabled = true;
         rollBtn.textContent = '🎲 掷骰子中...';
@@ -54,14 +69,14 @@ class DiceGame {
         
         let count = 0;
         const maxCount = 15;
-        const interval = setInterval(() => {
+        this.currentInterval = setInterval(() => {
             const randomIndex = Math.floor(Math.random() * 6);
             diceResult.textContent = this.diceEmojis[randomIndex];
             diceResult.style.transform = `rotate(${Math.random() * 360}deg)`;
             
             count++;
             if (count >= maxCount) {
-                clearInterval(interval);
+                this.clearInterval();
                 this.finalRoll();
             }
         }, 100);
@@ -71,6 +86,11 @@ class DiceGame {
         const diceResult = document.getElementById('dice-result');
         const rollBtn = document.getElementById('dice-roll-btn');
         const hint = document.querySelector('.dice-hint');
+        
+        if (!diceResult || !rollBtn || !hint) {
+            this.rolling = false;
+            return;
+        }
         
         const result = Math.floor(Math.random() * 6) + 1;
         diceResult.textContent = this.diceEmojis[result - 1];
@@ -84,7 +104,9 @@ class DiceGame {
         
         diceResult.style.animation = 'diceBounce 0.5s ease-out';
         setTimeout(() => {
-            diceResult.style.animation = '';
+            if (diceResult) {
+                diceResult.style.animation = '';
+            }
         }, 500);
     }
 }

@@ -3,8 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Our Memory</title>
-    <link rel="stylesheet" href="src/styles/main.css">
+    <link rel="stylesheet" href="src/styles/main.css" id="main-stylesheet">
+    <script>
+        if (window.matchMedia && window.matchMedia('(max-width: 767px)').matches) {
+            document.getElementById('main-stylesheet').onerror = function() {
+                console.error('CSS加载失败，尝试备用路径');
+                this.href = 'styles/main.css';
+            };
+        }
+    </script>
 </head>
 <body>
     <div class="app-container">

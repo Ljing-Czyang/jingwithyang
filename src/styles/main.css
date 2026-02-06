@@ -6,6 +6,11 @@
     --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
+* {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background: var(--bg-gradient);
@@ -15,6 +20,8 @@ body {
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .app-container {
@@ -24,6 +31,7 @@ body {
     box-shadow: 0 20px 40px rgba(0,0,0,0.2);
     width: 100%;
     height: 100%;
+    -webkit-overflow-scrolling: touch;
 }
 
 @media (min-width: 768px) {
@@ -46,12 +54,16 @@ body {
         height: 100vh;
         border-radius: 0;
         border: none;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
     }
     
     .login-card {
         width: 90%;
         max-width: 350px;
         padding: 20px;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
     }
     
     .login-card h2 {
@@ -61,15 +73,21 @@ body {
     .login-input {
         font-size: 18px;
         padding: 12px;
+        -webkit-appearance: none;
+        appearance: none;
     }
     
     .btn-primary {
         padding: 12px 20px;
         font-size: 16px;
+        -webkit-appearance: none;
+        appearance: none;
     }
     
     .header {
         padding: 12px 15px;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
     }
     
     .header h2 {
@@ -78,11 +96,14 @@ body {
     
     .menu-btn {
         font-size: 20px;
+        -webkit-tap-highlight-color: transparent;
     }
     
     .timer-card {
         margin: 15px;
         padding: 20px;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
     }
     
     .timer-card h1 {
@@ -96,10 +117,13 @@ body {
     
     .nav-tabs {
         height: 50px;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
     }
     
     .nav-item {
         font-size: 14px;
+        -webkit-tap-highlight-color: transparent;
     }
     
     .lab-grid {
@@ -111,23 +135,29 @@ body {
     .lab-item {
         padding: 15px;
         font-size: 14px;
+        -webkit-tap-highlight-color: transparent;
     }
     
     .calendar-modal-content {
         width: 95%;
         max-width: 350px;
         padding: 20px;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
     }
     
     .calendar-day {
         padding: 8px;
         font-size: 14px;
+        -webkit-tap-highlight-color: transparent;
     }
     
     .dice-content {
         width: 95%;
         max-width: 350px;
         padding: 20px;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
     }
     
     .dice-display {
@@ -141,10 +171,14 @@ body {
     .dice-roll-btn {
         padding: 12px 20px;
         font-size: 16px;
+        -webkit-appearance: none;
+        appearance: none;
     }
     
     .sidebar {
         width: 220px;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
     }
     
     .user-info {
@@ -158,12 +192,19 @@ body {
     .menu-item {
         padding: 12px 15px;
         font-size: 14px;
+        -webkit-tap-highlight-color: transparent;
     }
     
     .date-detail-content {
         width: 95%;
         max-width: 320px;
         padding: 20px;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+    }
+    
+    .scroll-content {
+        -webkit-overflow-scrolling: touch;
     }
 }
 
