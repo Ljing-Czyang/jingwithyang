@@ -968,6 +968,51 @@ body {
     margin-bottom: 15px;
 }
 
+.uploader-select {
+    margin-bottom: 15px;
+}
+
+.uploader-select > label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.uploader-options {
+    display: flex;
+    gap: 10px;
+}
+
+.uploader-option {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    border: 2px solid #eee;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+    user-select: none;
+}
+
+.uploader-option input[type="radio"] {
+    display: none;
+}
+
+.uploader-option:has(input[type="radio"]:checked) {
+    border-color: var(--primary-color);
+    background: linear-gradient(135deg, rgba(255, 107, 129, 0.1) 0%, rgba(242, 112, 154, 0.1) 100%);
+}
+
+.uploader-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
 .upload-input,
 .upload-textarea {
     width: 100%;
@@ -1488,5 +1533,17 @@ body {
     
     .date-photos-body {
         padding: 15px;
+    }
+
+    .uploader-options {
+        flex-direction: row;
+    }
+
+    .uploader-option {
+        padding: 12px;
+    }
+
+    .uploader-label {
+        font-size: 15px;
     }
 }

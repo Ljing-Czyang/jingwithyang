@@ -316,6 +316,19 @@ class CoupleCalendar {
                         <p class="upload-hint">支持 JPG、PNG、WebP，最大 5MB</p>
                     </div>
                     <div class="upload-form">
+                        <div class="uploader-select">
+                            <label>上传者</label>
+                            <div class="uploader-options">
+                                <label class="uploader-option">
+                                    <input type="radio" name="uploader-${dateStr}" value="jing" checked>
+                                    <span class="uploader-label">❤️ 境</span>
+                                </label>
+                                <label class="uploader-option">
+                                    <input type="radio" name="uploader-${dateStr}" value="yang">
+                                    <span class="uploader-label">💛 扬</span>
+                                </label>
+                            </div>
+                        </div>
                         <input type="text" id="photo-title-${dateStr}" class="upload-input" placeholder="照片标题（可选）">
                         <textarea id="photo-desc-${dateStr}" class="upload-textarea" placeholder="照片描述（可选）" rows="3"></textarea>
                     </div>
@@ -377,11 +390,15 @@ class CoupleCalendar {
                 uploadBtn.disabled = true;
                 uploadBtn.textContent = '上传中...';
 
+                const uploaderInput = document.querySelector(`input[name="uploader-${dateStr}"]:checked`);
+                const uploader = uploaderInput ? uploaderInput.value : 'jing';
+
                 await storage.uploadPhoto(
                     selectedFile,
                     dateStr,
                     titleInput.value,
-                    descInput.value
+                    descInput.value,
+                    uploader
                 );
 
                 document.querySelector('.upload-modal').remove();

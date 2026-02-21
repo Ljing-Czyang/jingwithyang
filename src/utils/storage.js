@@ -20,12 +20,19 @@ class StorageManager {
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.photos));
     }
 
-    async uploadPhoto(file, dateStr, title, description) {
+    async uploadPhoto(file, dateStr, title, description, uploader) {
         ImageUtils.validateFile(file);
 
         const photoId = `photo_${Date.now()}`;
         const imageData = await ImageUtils.fileToBase64(file);
         const thumbnail = await ImageUtils.generateThumbnail(file);
+
+        const uploaderInfo = {
+            jing: { id: 'user_001', name: '境', avatar: '❤️' },
+            yang: { id: 'user_002', name: '扬', avatar: '💛' }
+        };
+
+        const info = uploaderInfo[uploader] || uploaderInfo.jing;
 
         const photo = {
             id: photoId,
@@ -34,9 +41,9 @@ class StorageManager {
             description: description || '',
             imageUrl: imageData,
             thumbnailUrl: thumbnail,
-            uploadedBy: 'user_001',
-            uploadedByName: '境',
-            uploadedByAvatar: '❤️',
+            uploadedBy: info.id,
+            uploadedByName: info.name,
+            uploadedByAvatar: info.avatar,
             createdAt: new Date().toISOString(),
             isPrivate: false
         };
