@@ -67,6 +67,10 @@ class HomeFeature {
             els.bottomNav.style.display = 'none';
             els.headerTitle.innerText = "📅 日历";
             calendar.renderCalendarView();
+        } else if (viewName === 'album') {
+            els.bottomNav.style.display = 'none';
+            els.headerTitle.innerText = "📷 相册";
+            albumFeature.show();
         }
     }
 

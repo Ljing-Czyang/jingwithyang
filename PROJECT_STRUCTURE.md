@@ -1,7 +1,7 @@
 # 项目结构说明文档
 
 ## 项目概述
-本项目是一个情侣专属空间应用，包含登录、首页、日历、掷骰子等功能模块。项目采用模块化结构，便于维护和扩展。
+本项目是一个情侣专属空间应用，包含登录、首页、日历、私密相册、掷骰子等功能模块。项目采用模块化结构，便于维护和扩展。
 
 ## 目录结构
 
@@ -14,7 +14,9 @@ jingwithyang/
 │   ├── utils/                   # 工具函数
 │   │   ├── config.js            # 配置中心（密码、日期、情书等）
 │   │   ├── dom.js               # DOM元素引用
-│   │   └── helpers.js           # 通用工具函数
+│   │   ├── helpers.js           # 通用工具函数
+│   │   ├── image-utils.js       # 图片处理工具
+│   │   └── storage.js           # 存储管理器
 │   ├── styles/                  # 全局样式
 │   │   └── main.css             # 主样式文件
 │   ├── features/                # 按功能划分的模块文件夹
@@ -24,6 +26,8 @@ jingwithyang/
 │   │   │   └── home.js          # 首页逻辑（计时器、打字机、导航等）
 │   │   ├── calendar/            # 日历功能模块
 │   │   │   └── calendar.js      # 日历逻辑
+│   │   ├── album/               # 相册功能模块
+│   │   │   └── album.js         # 相册逻辑
 │   │   ├── dice/                # 掷骰子功能模块
 │   │   │   └── dice.js          # 掷骰子逻辑
 │   │   └── lab/                 # 实验室功能模块
@@ -42,7 +46,7 @@ jingwithyang/
 - **作用**：
   - 定义页面结构
   - 加载CSS和JavaScript文件
-  - 包含登录页面、主页、侧边栏等UI组件
+  - 包含登录页面、主页、侧边栏、相册视图等UI组件
 - **依赖**：src/styles/main.css, src/utils/*.js, src/features/**/*.js, src/app.js
 
 ### 2. src/ 目录
@@ -84,6 +88,27 @@ jingwithyang/
   - calculateDaysBetween(startDate, endDate)：计算两个日期之间的天数
 - **使用方式**：被各个功能模块调用
 
+##### src/utils/image-utils.js
+- **功能**：图片处理工具类
+- **内容**：
+  - fileToBase64(file)：文件转Base64
+  - generateThumbnail(file, maxWidth, maxHeight)：生成缩略图
+  - validateFile(file)：验证文件格式和大小
+- **使用方式**：被相册和日历模块调用
+
+##### src/utils/storage.js
+- **功能**：存储管理器
+- **内容**：
+  - loadPhotos()：从localStorage加载照片
+  - savePhotos()：保存照片到localStorage
+  - uploadPhoto(file, dateStr, title, description)：上传照片
+  - getPhotos()：获取所有照片
+  - getPhotosByDate(dateStr)：按日期获取照片
+  - deletePhoto(photoId)：删除照片
+  - togglePrivacy(photoId)：切换私密状态
+- **当前实现**：使用localStorage存储，预留Supabase接入位置
+- **全局实例**：storage
+
 #### src/styles/
 存放样式文件
 
@@ -95,6 +120,9 @@ jingwithyang/
   - 响应式布局（移动端适配）
   - 各功能模块样式
   - 动画效果
+  - 相册和照片样式
+  - 上传弹窗样式
+  - 照片详情样式
 - **特点**：包含完整的移动端适配样式
 
 #### src/features/
@@ -122,7 +150,7 @@ jingwithyang/
   - startTimer()：启动恋爱天数计时器
   - startTypewriter()：启动情书打字机效果
   - toggleSidebar(show)：切换侧边栏显示
-  - switchView(viewName)：切换视图（首页/实验室）
+  - switchView(viewName)：切换视图（首页/实验室/日历/相册）
   - switchBottomTab(tabName, tabElement)：切换底部标签页
 - **全局实例**：homeFeature
 
@@ -139,8 +167,30 @@ jingwithyang/
   - updateCalendar()：更新日历显示
   - renderSpecialDates()：渲染特殊日期列表
   - showDateDetails(dateStr)：显示日期详情
+  - showDatePhotos(dateStr, dateModal)：显示该日期的照片
+  - closeDatePhotos(dateStr)：关闭照片查看
+  - showPhotoDetail(photoId, dateStr)：显示照片详情
+  - deletePhoto(photoId, dateStr, modal)：删除照片
+  - showUploadModal(dateStr)：显示上传弹窗
+  - setupUploadEvents(dateStr)：设置上传事件
   - isSpecialDate(dateStr)：判断是否为特殊日期
 - **全局实例**：calendar
+
+##### src/features/album/
+相册功能模块
+
+###### src/features/album/album.js
+- **功能**：相册功能实现
+- **类名**：AlbumFeature
+- **主要方法**：
+  - show()：显示相册视图
+  - renderAlbumView()：渲染相册
+  - groupPhotosByDate()：按日期分组照片
+  - setFilter(filter)：设置筛选
+  - showPhotoDetail(photoId)：显示照片详情
+  - deletePhoto(photoId, modal)：删除照片
+  - refresh()：刷新相册
+- **全局实例**：albumFeature
 
 ##### src/features/dice/
 掷骰子功能模块
@@ -165,6 +215,7 @@ jingwithyang/
   - 侧边栏开关事件
   - 菜单切换事件
   - 底部标签页切换事件
+  - 相册菜单事件
 - **作用**：协调各功能模块的初始化
 
 ## 文件引用关系
@@ -176,10 +227,13 @@ index.html
 ├── src/utils/config.js
 ├── src/utils/dom.js
 ├── src/utils/helpers.js
+├── src/utils/image-utils.js
+├── src/utils/storage.js
 ├── src/features/login/login.js
 ├── src/features/home/home.js
 ├── src/features/calendar/calendar.js
 ├── src/features/dice/dice.js
+├── src/features/album/album.js
 └── src/app.js
 ```
 
@@ -195,7 +249,11 @@ src/app.js
 │   └── src/utils/helpers.js
 ├── src/features/calendar/calendar.js
 │   ├── src/utils/config.js
-│   └── src/utils/helpers.js
+│   ├── src/utils/helpers.js
+│   ├── src/utils/image-utils.js
+│   └── src/utils/storage.js
+├── src/features/album/album.js
+│   └── src/utils/storage.js
 └── src/features/dice/dice.js
 ```
 
@@ -249,8 +307,25 @@ python -m http.server 8000
 - 显示每月纪念日
 - 查看日期详情
 - 切换月份
+- 日期上显示照片标记（小红点）
+- 查看日期照片
+- 上传照片到指定日期
 
-### 4. 掷骰子功能
+### 4. 私密相册功能
+- 按日期分组展示所有照片
+- 点击查看照片大图
+- 照片预览和删除
+- 筛选功能
+
+### 5. 照片上传功能
+- 点击或拖拽上传照片
+- 支持JPG、PNG、WebP格式
+- 文件大小限制5MB
+- 自动生成缩略图
+- 照片标题和描述
+- 实时预览
+
+### 6. 掷骰子功能
 - 掷骰子动画效果
 - 显示掷骰结果
 - 支持重复掷骰
@@ -278,6 +353,31 @@ python -m http.server 8000
 ### 添加新工具函数
 1. 在 `src/utils/helpers.js` 中添加函数
 2. 确保函数有清晰的注释和参数说明
+
+### 接入 Supabase（替代 localStorage）
+1. 创建 Supabase 项目
+2. 在 SQL Editor 中运行数据库表创建脚本
+3. 创建名为 `photos` 的存储桶（公开访问）
+4. 修改 `src/utils/storage.js`，替换为 Supabase 版本
+5. 在 `index.html` 中引入 Supabase CDN
+6. 填入项目 URL 和 anon key
+
+### 照片数据结构
+```javascript
+{
+    id: "photo_001",
+    date: "2026-01-21",
+    title: "照片标题",
+    description: "照片描述",
+    imageUrl: "data:image/jpeg;base64,...",
+    thumbnailUrl: "data:image/jpeg;base64,...",
+    uploadedBy: "user_001",
+    uploadedByName: "境",
+    uploadedByAvatar: "❤️",
+    createdAt: "2026-01-21T10:30:00",
+    isPrivate: false
+}
+```
 
 ## 注意事项
 
