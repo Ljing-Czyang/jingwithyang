@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Our Memory</title>
+    <link rel="stylesheet" href="src/styles/main.css" id="main-stylesheet">
+    <script>
+        if (window.matchMedia && window.matchMedia('(max-width: 767px)').matches) {
+            document.getElementById('main-stylesheet').onerror = function() {
+                console.error('CSS加载失败，尝试备用路径');
+                this.href = 'styles/main.css';
+            };
+        }
+    </script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 遮罩层 -->
+        <div class="overlay" id="overlay"></div>
+        
+        <!-- 侧边栏 -->
+        <div class="sidebar" id="sidebar">
+            <div class="user-info">
+                <div class="user-avatar">❤️</div>
+                <div>My Princess</div>
+            </div>
+            <ul class="menu-list">
+                <li class="menu-item active-menu" id="menu-home">
+                    <span class="menu-icon">🏠</span> 首页
+                </li>
+                <li class="menu-item" id="menu-lab">
+                    <span class="menu-icon">🎁</span> 境和扬的百宝库
+                </li>
+                <li class="menu-item" id="menu-calendar">
+                    <span class="menu-icon">📅</span> 日历
+                </li>
+                <li class="menu-item" id="menu-album">
+                    <span class="menu-icon">📷</span> 私密相册
+                </li>
+            </ul>
+        </div>
+
+        <!-- 登录页面 -->
+        <div id="page-login" class="page active">
+            <div class="login-card">
+                <h2>🔒 专属空间</h2>
+                <p style="color: #636e72; font-size: 14px;">故事开始于何时呢 (例:0520)</p>
+                <input type="password" id="passcode" class="login-input" placeholder="****" maxlength="4">
+                <button class="btn-primary" id="btn-unlock">Unlock</button>
+            </div>
+        </div>
+
+        <!-- 主页面 -->
+        <div id="page-home" class="page">
+            <div class="header">
+                <div class="menu-btn" id="btn-toggle-sidebar">☰</div>
+                <h2 id="header-title">For You</h2>
+            </div>
+
+            <div class="scroll-content">
+                <!-- 首页视图 -->
+                <div id="view-home" class="content-view">
+                    <div class="timer-card">
+                        <p>我们已经相爱</p>
+                        <h1 id="days-count">0</h1>
+                        <p>DAYS</p>
+                    </div>
+
+                    <div id="tab-timeline" class="content-section active-content">
+                        <div class="timeline-hint">下拉查看回忆 ↓</div>
+                        <div class="timeline-item">
+                            <div class="t-date">2025.09.21</div>
+                            <div class="t-content">故事开始的地方。</div>
+                        </div>
+                         <div class="timeline-item">
+                            <div class="t-date">2026.01.21</div>
+                            <div class="t-content">一起过的第一天。</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="t-date">NOW</div>
+                            <div class="t-content">未完待续...</div>
+                        </div>
+                    </div>
+
+                    <div id="tab-letter" class="content-section">
+                        <div class="typewriter-box">
+                            <span id="typewriter-text"></span><span class="cursor"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 百宝库视图 -->
+                <div id="view-lab" class="content-view" style="display: none;">
+                    <div style="padding: 20px;">
+                        <h3>🎁 来看看有什么呢</h3>
+                        <p style="color: #888; font-size: 14px;">为你开发的小工具。</p>
+                        <div class="lab-grid">
+                            <div class="lab-item" onclick="diceGame.roll()">🎲 掷骰子</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 日历视图 -->
+                <div id="view-calendar" class="content-view" style="display: none;">
+                    <div id="calendar-container" style="padding: 20px;"></div>
+                </div>
+
+                <!-- 相册视图 -->
+                <div id="view-album" class="content-view" style="display: none;">
+                </div>
+            </div>
+
+            <!-- 底部导航 -->
+            <div class="nav-tabs" id="bottom-nav">
+                <div class="nav-item active-tab" data-tab="timeline">回忆录</div>
+                <div class="nav-item" data-tab="letter">情书</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript文件加载 -->
+    <script src="src/utils/config.js"></script>
+    <script src="src/utils/dom.js"></script>
+    <script src="src/utils/helpers.js"></script>
+    <script src="src/utils/image-utils.js"></script>
+    <script src="src/utils/storage.js"></script>
+    <script src="src/features/login/login.js"></script>
+    <script src="src/features/home/home.js"></script>
+    <script src="src/features/calendar/calendar.js"></script>
+    <script src="src/features/dice/dice.js"></script>
+    <script src="src/features/album/album.js"></script>
+    <script src="src/app.js"></script>
+</body>
+</html>
