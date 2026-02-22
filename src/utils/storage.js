@@ -17,7 +17,15 @@ class StorageManager {
     }
 
     savePhotos() {
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.photos));
+        try {
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.photos));
+        } catch (error) {
+            console.error('保存照片数据失败:', error);
+            if (error.name === 'QuotaExceededError') {
+                alert('存储空间已满！请删除一些照片后再试。');
+            }
+            throw error;
+        }
     }
 
     async uploadPhoto(file, dateStr, title, description, uploader) {

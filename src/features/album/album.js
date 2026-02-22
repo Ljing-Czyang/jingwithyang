@@ -84,7 +84,7 @@ class AlbumFeature {
     }
 
     showPhotoDetail(photoId) {
-        const photo = this.photos.find(p => p.id === photoId);
+        const photo = storage.getPhotos().find(p => p.id === photoId);
         if (!photo) return;
 
         const modal = document.createElement('div');
