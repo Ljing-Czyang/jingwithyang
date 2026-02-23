@@ -4,9 +4,54 @@ class AlbumFeature {
         this.photos = [];
     }
 
-    show() {
-        this.photos = storage.getPhotos();
-        this.renderAlbumView();
+    renderLoadingView() {
+        return `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 20px;">
+                <div style="width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid #ff6b6b; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <p style="color: #888; margin-top: 20px; font-size: 16px;">加载中...</p>
+            </div>
+            <style>
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            </style>
+        `;
+    }
+
+    async show() {
+        const container = document.getElementById('view-album');
+        if (container) {
+            container.innerHTML = `
+                <div class="album-container">
+                    <div class="album-header">
+                        <h3>📷 我们的相册</h3>
+                    </div>
+                    <div class="album-content">
+                        ${this.renderLoadingView()}
+                    </div>
+                </div>
+            `;
+        }
+        
+        try {
+            this.photos = await storage.getPhotos();
+            this.renderAlbumView();
+        } catch (error) {
+            console.error('加载相册失败:', error);
+            if (container) {
+                container.innerHTML = `
+                    <div class="album-container">
+                        <div class="album-header">
+                            <h3>📷 我们的相册</h3>
+                        </div>
+                        <div class="album-content" style="display: flex; align-items: center; justify-content: center; padding: 80px 20px;">
+                            <p style="color: #ff6b6b; text-align: center;">加载失败，请刷新重试</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
     }
 
     renderAlbumView() {
@@ -83,8 +128,9 @@ class AlbumFeature {
         this.renderAlbumView();
     }
 
-    showPhotoDetail(photoId) {
-        const photo = storage.getPhotos().find(p => p.id === photoId);
+    async showPhotoDetail(photoId) {
+        const photos = await storage.getPhotos();
+        const photo = photos.find(p => p.id === photoId);
         if (!photo) return;
 
         const modal = document.createElement('div');
@@ -114,16 +160,17 @@ class AlbumFeature {
         document.body.appendChild(modal);
     }
 
-    deletePhoto(photoId, modal) {
+    async deletePhoto(photoId, modal) {
         if (confirm('确定要删除这张照片吗？')) {
-            storage.deletePhoto(photoId);
+            await storage.deletePhoto(photoId);
+            this.photos = this.photos.filter(p => p.id !== photoId);
             if (modal) modal.remove();
-            this.show();
+            await this.show();
         }
     }
 
-    refresh() {
-        this.show();
+    async refresh() {
+        await this.show();
     }
 }
 

@@ -11,5 +11,11 @@ const CONFIG = {
     events: [
         { date: "2026-02-14", title: "情人节", type: "holiday" },
         { date: "2026-12-25", title: "圣诞节", type: "holiday" }
-    ]
+    ],
+    supabase: {
+        url: "https://ajfyswyaqctvcntvzwyx.supabase.co",
+        anonKey: "sb_publishable_p68HEA9VFyVFqbpKhjtBqg_T3eIUus8",
+        storageBucket: "photos",
+        tableName: "photos"
+    }
 };

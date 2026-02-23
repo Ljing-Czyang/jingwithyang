@@ -1,25 +1,54 @@
 class CoupleCalendar {
     constructor() {
         this.currentDate = new Date();
+        this.cachedPhotos = [];
     }
 
-    renderCalendarView() {
+    renderLoadingView() {
+        return `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px;">
+                <div style="width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid #ff6b6b; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <p style="color: #888; margin-top: 16px;">加载中...</p>
+            </div>
+            <style>
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            </style>
+        `;
+    }
+
+    async renderCalendarView() {
         const container = document.getElementById('calendar-container');
-        if (container) {
+        if (!container) return;
+        
+        container.innerHTML = `
+            <h3>📅 我们的日历</h3>
+            ${this.renderLoadingView()}
+        `;
+        
+        try {
+            const allPhotos = await storage.getPhotos();
+            this.cachedPhotos = allPhotos;
             container.innerHTML = `
                 <h3>📅 我们的日历</h3>
-                ${this.render()}
+                ${this.render(allPhotos)}
                 <div class="calendar-events">
                     <h4>📌 重要日期</h4>
                     ${this.renderSpecialDates()}
                 </div>
             `;
+        } catch (error) {
+            console.error('加载日历失败:', error);
+            container.innerHTML = `
+                <h3>📅 我们的日历</h3>
+                <p style="color: #ff6b6b; text-align: center; padding: 40px;">加载失败，请刷新重试</p>
+            `;
         }
     }
 
-    show() {
-        const calendarHTML = this.render();
-        
+    async show() {
         const modal = document.createElement('div');
         modal.className = 'calendar-modal';
         modal.innerHTML = `
@@ -28,18 +57,45 @@ class CoupleCalendar {
                     <h3>📅 我们的日历</h3>
                     <button onclick="this.closest('.calendar-modal').remove()">✕</button>
                 </div>
-                ${calendarHTML}
-                <div class="calendar-events">
-                    <h4>📌 重要日期</h4>
-                    ${this.renderSpecialDates()}
-                </div>
+                ${this.renderLoadingView()}
             </div>
         `;
         
         document.body.appendChild(modal);
+        
+        try {
+            const allPhotos = await storage.getPhotos();
+            this.cachedPhotos = allPhotos;
+            const calendarContent = modal.querySelector('.calendar-modal-content');
+            if (calendarContent) {
+                calendarContent.innerHTML = `
+                    <div class="calendar-modal-header">
+                        <h3>📅 我们的日历</h3>
+                        <button onclick="this.closest('.calendar-modal').remove()">✕</button>
+                    </div>
+                    ${this.render(allPhotos)}
+                    <div class="calendar-events">
+                        <h4>📌 重要日期</h4>
+                        ${this.renderSpecialDates()}
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('加载日历失败:', error);
+            const calendarContent = modal.querySelector('.calendar-modal-content');
+            if (calendarContent) {
+                calendarContent.innerHTML = `
+                    <div class="calendar-modal-header">
+                        <h3>📅 我们的日历</h3>
+                        <button onclick="this.closest('.calendar-modal').remove()">✕</button>
+                    </div>
+                    <p style="color: #ff6b6b; text-align: center; padding: 40px;">加载失败，请重试</p>
+                `;
+            }
+        }
     }
 
-    render() {
+    render(photos = []) {
         const year = this.currentDate.getFullYear();
         const month = this.currentDate.getMonth();
         
@@ -75,8 +131,8 @@ class CoupleCalendar {
             const isToday = isSameDay(date, new Date());
             const isSpecial = this.isSpecialDate(dateStr);
             const isAnniversary = day === CONFIG.monthlyAnniversary;
-            const photos = storage.getPhotosByDate(dateStr);
-            const hasPhotos = photos.length > 0;
+            const dayPhotos = photos.filter(p => p.date === dateStr);
+            const hasPhotos = dayPhotos.length > 0;
             
             let classes = 'calendar-day';
             if (isToday) classes += ' today';
@@ -95,15 +151,17 @@ class CoupleCalendar {
         return html;
     }
 
-    changeMonth(delta) {
+    async changeMonth(delta) {
         this.currentDate.setMonth(this.currentDate.getMonth() + delta);
-        this.updateCalendar();
+        await this.updateCalendar();
     }
 
-    updateCalendar() {
+    async updateCalendar() {
         const calendarContent = document.querySelector('.calendar-modal-content');
+        const photosToUse = this.cachedPhotos.length > 0 ? this.cachedPhotos : await storage.getPhotos();
+        
         if (calendarContent) {
-            const newCalendar = this.render();
+            const newCalendar = this.render(photosToUse);
             calendarContent.innerHTML = `
                 <div class="calendar-modal-header">
                     <h3>📅 我们的时光</h3>
@@ -116,7 +174,7 @@ class CoupleCalendar {
                 </div>
             `;
         } else {
-            this.renderCalendarView();
+            await this.renderCalendarView();
         }
     }
 
@@ -136,12 +194,12 @@ class CoupleCalendar {
         return html;
     }
 
-    showDateDetails(dateStr) {
+    async showDateDetails(dateStr) {
         document.querySelectorAll('.date-detail-modal, .date-photos-modal, .upload-modal, .photo-detail-modal').forEach(el => el.remove());
         
         const specialDate = CONFIG.specialDates.find(d => d.date === dateStr);
         const event = CONFIG.events.find(e => e.date === dateStr);
-        const photos = storage.getPhotosByDate(dateStr);
+        const photos = await storage.getPhotosByDate(dateStr);
         
         const startDate = new Date(CONFIG.startDate);
         const currentDate = new Date(dateStr);
@@ -202,10 +260,10 @@ class CoupleCalendar {
         document.body.appendChild(modal);
     }
 
-    showDatePhotos(dateStr, dateModal) {
+    async showDatePhotos(dateStr, dateModal) {
         document.querySelectorAll('.date-detail-modal, .date-photos-modal, .upload-modal, .photo-detail-modal').forEach(el => el.remove());
         
-        const photos = storage.getPhotosByDate(dateStr);
+        const photos = await storage.getPhotosByDate(dateStr);
         
         let html = `
             <div class="date-photos-modal" id="date-photos-${dateStr}">
@@ -255,15 +313,16 @@ class CoupleCalendar {
         document.body.appendChild(modal);
     }
 
-    closeDatePhotos(dateStr) {
+    async closeDatePhotos(dateStr) {
         document.querySelectorAll('.date-detail-modal, .date-photos-modal, .upload-modal, .photo-detail-modal').forEach(el => el.remove());
-        this.showDateDetails(dateStr);
+        await this.showDateDetails(dateStr);
     }
 
-    showPhotoDetail(photoId, dateStr) {
+    async showPhotoDetail(photoId, dateStr) {
         document.querySelectorAll('.date-detail-modal, .date-photos-modal, .upload-modal, .photo-detail-modal').forEach(el => el.remove());
         
-        const photo = storage.getPhotos().find(p => p.id === photoId);
+        const photos = await storage.getPhotos();
+        const photo = photos.find(p => p.id === photoId);
         if (!photo) return;
 
         const modal = document.createElement('div');
@@ -293,12 +352,13 @@ class CoupleCalendar {
         document.body.appendChild(modal);
     }
 
-    deletePhoto(photoId, dateStr, modal) {
+    async deletePhoto(photoId, dateStr, modal) {
         if (confirm('确定要删除这张照片吗？')) {
-            storage.deletePhoto(photoId);
+            await storage.deletePhoto(photoId);
+            this.cachedPhotos = this.cachedPhotos.filter(p => p.id !== photoId);
             if (modal) modal.remove();
-            this.showDatePhotos(dateStr, null);
-            this.updateCalendar();
+            await this.showDatePhotos(dateStr, null);
+            await this.updateCalendar();
         }
     }
 
@@ -363,6 +423,30 @@ class CoupleCalendar {
 
         let selectedFile = null;
 
+        const handleFileSelect = (file, dStr) => {
+            try {
+                console.log('选择文件:', file.name, '大小:', file.size, '类型:', file.type);
+                ImageUtils.validateFile(file);
+                selectedFile = file;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImg.src = e.target.result;
+                    uploadPreview.style.display = 'block';
+                    uploadBtn.disabled = false;
+                    console.log('文件预览加载成功');
+                };
+                reader.onerror = (e) => {
+                    console.error('文件读取失败:', e);
+                    alert('文件读取失败，请重试');
+                };
+                reader.readAsDataURL(file);
+            } catch (error) {
+                console.error('文件验证失败:', error);
+                alert(error.message);
+            }
+        };
+
         uploadArea.addEventListener('click', () => fileInput.click());
 
         uploadArea.addEventListener('dragover', (e) => {
@@ -378,22 +462,31 @@ class CoupleCalendar {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
             if (e.dataTransfer.files.length > 0) {
-                this.handleFileSelect(e.dataTransfer.files[0], dateStr);
+                handleFileSelect(e.dataTransfer.files[0], dateStr);
             }
         });
 
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
-                this.handleFileSelect(e.target.files[0], dateStr);
+                handleFileSelect(e.target.files[0], dateStr);
             }
         });
 
         uploadBtn.addEventListener('click', async () => {
-            if (!selectedFile) return;
+            if (!selectedFile) {
+                console.warn('没有选择文件');
+                return;
+            }
 
             try {
                 uploadBtn.disabled = true;
                 uploadBtn.textContent = '上传中...';
+
+                console.log('开始上传, 文件信息:', {
+                    name: selectedFile.name,
+                    size: selectedFile.size,
+                    type: selectedFile.type
+                });
 
                 const uploaderInput = document.querySelector(`input[name="uploader-${dateStr}"]:checked`);
                 const uploader = uploaderInput ? uploaderInput.value : 'jing';
@@ -406,32 +499,18 @@ class CoupleCalendar {
                     uploader
                 );
 
+                console.log('上传成功');
+                this.cachedPhotos = await storage.getPhotos();
                 document.querySelector('.upload-modal').remove();
-                this.showDatePhotos(dateStr, null);
-                this.updateCalendar();
+                await this.showDatePhotos(dateStr, null);
+                await this.updateCalendar();
             } catch (error) {
-                alert(error.message);
+                console.error('上传失败:', error);
+                alert('上传失败: ' + (error.message || '未知错误'));
                 uploadBtn.disabled = false;
                 uploadBtn.textContent = '上传';
             }
         });
-
-        this.handleFileSelect = (file, dStr) => {
-            try {
-                ImageUtils.validateFile(file);
-                selectedFile = file;
-
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    previewImg.src = e.target.result;
-                    uploadPreview.style.display = 'block';
-                    uploadBtn.disabled = false;
-                };
-                reader.readAsDataURL(file);
-            } catch (error) {
-                alert(error.message);
-            }
-        };
     }
 
     isSpecialDate(dateStr) {

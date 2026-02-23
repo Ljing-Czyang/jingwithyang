@@ -48,7 +48,7 @@ class HomeFeature {
         }
     }
 
-    switchView(viewName) {
+    async switchView(viewName) {
         this.toggleSidebar(false);
         
         document.querySelectorAll('.content-view').forEach(el => el.style.display = 'none');
@@ -66,11 +66,11 @@ class HomeFeature {
         } else if (viewName === 'calendar') {
             els.bottomNav.style.display = 'none';
             els.headerTitle.innerText = "📅 日历";
-            calendar.renderCalendarView();
+            await calendar.renderCalendarView();
         } else if (viewName === 'album') {
             els.bottomNav.style.display = 'none';
             els.headerTitle.innerText = "📷 相册";
-            albumFeature.show();
+            await albumFeature.show();
         }
     }
 
