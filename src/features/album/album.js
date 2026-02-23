@@ -90,7 +90,7 @@ class AlbumFeature {
                 photos.forEach(photo => {
                     html += `
                         <div class="album-photo-item" onclick="albumFeature.showPhotoDetail('${photo.id}')">
-                            <img src="${photo.thumbnailUrl}" alt="${photo.title}">
+                            <img src="${photo.thumbnailUrl}" alt="${photo.title}" loading="lazy">
                             <div class="album-photo-overlay">
                                 <span class="album-photo-avatar">${photo.uploadedByAvatar}</span>
                             </div>
@@ -142,7 +142,7 @@ class AlbumFeature {
                     <button onclick="this.closest('.photo-detail-modal').remove()">✕</button>
                 </div>
                 <div class="photo-detail-body">
-                    <img src="${photo.imageUrl}" alt="${photo.title}">
+                    <img src="${photo.imageUrl}" alt="${photo.title}" loading="lazy">
                     <div class="photo-detail-info">
                         <div class="photo-detail-date">📅 ${photo.date}</div>
                         ${photo.description ? `<div class="photo-detail-desc">${photo.description}</div>` : ''}
