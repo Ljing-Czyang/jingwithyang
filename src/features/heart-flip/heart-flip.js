@@ -27,7 +27,6 @@ class HeartFlip {
                                 <div class="card-content">
                                     <div class="quote-text" id="quote-text"></div>
                                 </div>
-                                <div class="card-corner"></div>
                             </div>
                             <div class="card-back">
                                 <div class="card-back-content">
@@ -56,6 +55,7 @@ class HeartFlip {
         const quote = this.getRandomQuote();
         this.history = [quote];
         this.historyIndex = 0;
+        this.currentIndex = 1;
         this.updateCardContent(quote);
     }
 
@@ -97,6 +97,8 @@ class HeartFlip {
             cardFront.classList.remove('mood-sweet', 'mood-deep', 'mood-playful');
             cardFront.classList.add(moodConfig.cardStyle);
         }
+        
+        this.currentIndex = this.historyIndex + 1;
         
         const counterEl = document.getElementById('current-index');
         if (counterEl) counterEl.textContent = this.currentIndex;
@@ -227,7 +229,6 @@ class HeartFlip {
             }
             
             this.updateCardContent(newQuote);
-            this.currentIndex = this.historyIndex + 1;
         }, 300);
         
         setTimeout(() => {
