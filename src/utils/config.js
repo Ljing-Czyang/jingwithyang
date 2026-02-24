@@ -1,7 +1,7 @@
 const CONFIG = {
     passcode: atob("MDEyMQ=="),
     startDate: "2026-01-21",
-    loveLetter: "我不擅长写情话，<br>但我只想把你和我的每一天，<br>都按一次 Ctrl+S（保存）。<br><br>Forever Love. ❤️",
+    loveLetter: "我不擅长写情话，<br>但我只想把你和我的每一天，<br>都按一次 Ctrl+S。<br><br>Forever Love. ❤️",
     specialDates: [
         { date: "2026-01-21", title: "💕 我们在一起", type: "start" },
         { date: "2026-02-25", title: "💝 第一次约会", type: "special" },
