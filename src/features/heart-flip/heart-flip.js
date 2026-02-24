@@ -3,7 +3,11 @@ class HeartFlip {
         this.currentIndex = 0;
         this.isFlipping = false;
         this.usedIndices = [];
+        this.history = [];
+        this.historyIndex = -1;
         this.modal = null;
+        this.touchStartX = 0;
+        this.touchStartY = 0;
     }
 
     show() {
@@ -25,9 +29,14 @@ class HeartFlip {
                                 </div>
                                 <div class="card-corner"></div>
                             </div>
+                            <div class="card-back">
+                                <div class="card-back-content">
+                                    <div class="card-back-icon">💕</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="flip-hint">点击卡片或向左滑动</div>
+                    <div class="flip-hint">点击卡片或左右滑动</div>
                     <div class="heart-particles" id="heart-particles"></div>
                 </div>
                 <div class="heart-flip-footer">
@@ -45,6 +54,8 @@ class HeartFlip {
 
     initCard() {
         const quote = this.getRandomQuote();
+        this.history = [quote];
+        this.historyIndex = 0;
         this.updateCardContent(quote);
     }
 
@@ -59,7 +70,6 @@ class HeartFlip {
         } while (this.usedIndices.includes(randomIndex));
         
         this.usedIndices.push(randomIndex);
-        this.currentIndex = this.usedIndices.length;
         
         return QUOTES[randomIndex];
     }
@@ -90,48 +100,138 @@ class HeartFlip {
         
         const counterEl = document.getElementById('current-index');
         if (counterEl) counterEl.textContent = this.currentIndex;
+        
+        const totalEl = document.getElementById('total-quotes');
+        if (totalEl) totalEl.textContent = this.history.length;
     }
 
     bindEvents() {
         const cardContainer = document.getElementById('card-container');
-        if (!cardContainer) return;
+        const card = document.getElementById('flip-card');
+        if (!cardContainer || !card) return;
 
-        cardContainer.addEventListener('click', () => this.handleFlip());
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+
+        cardContainer.addEventListener('click', (e) => {
+            if (!isDragging) {
+                this.handleFlip('next');
+            }
+        });
         
-        let touchStartX = 0;
-        let touchEndX = 0;
+        const handleStart = (x, y) => {
+            isDragging = false;
+            dragStartX = x;
+            dragStartY = y;
+            this.touchStartX = x;
+            this.touchStartY = y;
+            card.style.transition = 'none';
+        };
+        
+        const handleMove = (x, y) => {
+            const deltaX = x - dragStartX;
+            const deltaY = y - dragStartY;
+            
+            if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+                isDragging = true;
+            }
+            
+            const rotateY = deltaX / 10;
+            const rotateX = -deltaY / 10;
+            
+            card.style.transform = `perspective(1000px) rotateY(${rotateY}deg) rotateX(${rotateX}deg)`;
+        };
+        
+        const handleEnd = (x) => {
+            const deltaX = x - this.touchStartX;
+            
+            card.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            card.style.transform = 'perspective(1000px) rotateY(0) rotateX(0)';
+            
+            if (deltaX > 50) {
+                this.handleFlip('prev');
+            } else if (deltaX < -50) {
+                this.handleFlip('next');
+            }
+            
+            setTimeout(() => {
+                isDragging = false;
+            }, 50);
+        };
         
         cardContainer.addEventListener('touchstart', (e) => {
-            touchStartX = e.changedTouches[0].screenX;
+            handleStart(e.changedTouches[0].screenX, e.changedTouches[0].screenY);
+        }, { passive: true });
+        
+        cardContainer.addEventListener('touchmove', (e) => {
+            handleMove(e.changedTouches[0].screenX, e.changedTouches[0].screenY);
         }, { passive: true });
         
         cardContainer.addEventListener('touchend', (e) => {
-            touchEndX = e.changedTouches[0].screenX;
-            if (touchStartX - touchEndX > 50) {
-                this.handleFlip();
-            }
+            handleEnd(e.changedTouches[0].screenX);
         }, { passive: true });
+        
+        cardContainer.addEventListener('mousedown', (e) => {
+            handleStart(e.screenX, e.screenY);
+            e.preventDefault();
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (dragStartX !== 0 || dragStartY !== 0) {
+                handleMove(e.screenX, e.screenY);
+            }
+        });
+        
+        document.addEventListener('mouseup', (e) => {
+            if (dragStartX !== 0 || dragStartY !== 0) {
+                handleEnd(e.screenX);
+                dragStartX = 0;
+                dragStartY = 0;
+            }
+        });
     }
 
-    handleFlip() {
+    handleFlip(direction = 'next') {
         if (this.isFlipping) return;
         this.isFlipping = true;
         
         const card = document.getElementById('flip-card');
         if (!card) return;
         
-        card.classList.add('is-flipping');
+        const flipClass = direction === 'next' ? 'is-flipping-next' : 'is-flipping-prev';
+        card.classList.add(flipClass);
         
         this.triggerHapticFeedback();
         
         setTimeout(() => {
-            const newQuote = this.getRandomQuote();
+            let newQuote;
+            
+            if (direction === 'prev' && this.historyIndex > 0) {
+                this.historyIndex--;
+                newQuote = this.history[this.historyIndex];
+            } else if (direction === 'next') {
+                if (this.historyIndex < this.history.length - 1) {
+                    this.historyIndex++;
+                    newQuote = this.history[this.historyIndex];
+                } else {
+                    newQuote = this.getRandomQuote();
+                    this.history.push(newQuote);
+                    this.historyIndex = this.history.length - 1;
+                    this.createHeartParticles();
+                }
+            } else {
+                card.classList.remove(flipClass);
+                this.isFlipping = false;
+                return;
+            }
+            
             this.updateCardContent(newQuote);
-            this.createHeartParticles();
+            this.currentIndex = this.historyIndex + 1;
         }, 300);
         
         setTimeout(() => {
-            card.classList.remove('is-flipping');
+            card.classList.remove(flipClass);
             this.isFlipping = false;
         }, 600);
     }
