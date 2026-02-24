@@ -74,7 +74,7 @@ class StorageManager {
 
         const photoId = `photo_${Date.now()}`;
         const uploaderInfo = {
-            jing: { id: 'user_001', name: '境', avatar: '❤️' },
+            jing: { id: 'user_001', name: '境', avatar: '💚' },
             yang: { id: 'user_002', name: '扬', avatar: '💙' }
         };
 
