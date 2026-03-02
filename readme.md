@@ -1,7 +1,13 @@
 # 项目结构说明文档
 
 ## 项目概述
-本项目是一个情侣专属空间应用，包含登录、首页、日历、私密相册、掷骰子等功能模块。项目采用模块化结构，便于维护和扩展。
+本项目是一个情侣专属空间应用，包含登录、首页、日历、私密相册、掷骰子、心动折页等功能模块。项目采用模块化结构，便于维护和扩展。
+
+### 核心特性
+- **性能优化**：图片懒加载、CSS模块化拆分
+- **用户体验**：3D心动折页、手势控制、响应式设计
+- **数据管理**：本地存储、照片上传与管理
+- **视觉效果**：粒子动画、3D翻页、打字机效果
 
 ## 目录结构
 
@@ -11,14 +17,23 @@ jingwithyang/
 ├── src/                          # 源代码根目录
 │   ├── assets/                   # 静态资源文件夹（图片、字体等）
 │   ├── components/               # 可复用组件
+│   ├── data/                     # 数据文件
+│   │   └── quotes.js             # 心动折页情话数据
 │   ├── utils/                   # 工具函数
 │   │   ├── config.js            # 配置中心（密码、日期、情书等）
 │   │   ├── dom.js               # DOM元素引用
 │   │   ├── helpers.js           # 通用工具函数
 │   │   ├── image-utils.js       # 图片处理工具
 │   │   └── storage.js           # 存储管理器
-│   ├── styles/                  # 全局样式
-│   │   └── main.css             # 主样式文件
+│   ├── styles/                  # 样式文件
+│   │   ├── base.css             # 基础样式和变量
+│   │   ├── components.css       # 组件样式
+│   │   ├── layout.css           # 布局样式
+│   │   ├── features/            # 功能模块样式
+│   │   │   ├── calendar.css     # 日历样式
+│   │   │   ├── dice.css         # 掷骰子样式
+│   │   │   └── heart-flip.css   # 心动折页样式
+│   │   └── main.css             # 主样式文件（导入其他样式）
 │   ├── features/                # 按功能划分的模块文件夹
 │   │   ├── login/               # 登录功能模块
 │   │   │   └── login.js         # 登录逻辑
@@ -30,6 +45,8 @@ jingwithyang/
 │   │   │   └── album.js         # 相册逻辑
 │   │   ├── dice/                # 掷骰子功能模块
 │   │   │   └── dice.js          # 掷骰子逻辑
+│   │   ├── heart-flip/          # 心动折页功能模块
+│   │   │   └── heart-flip.js    # 心动折页逻辑
 │   │   └── lab/                 # 实验室功能模块
 │   └── app.js                   # 应用初始化和事件绑定
 │
@@ -60,6 +77,17 @@ jingwithyang/
 - **功能**：存放可复用的UI组件
 - **用途**：如按钮、卡片、模态框等通用组件
 - **当前状态**：空目录，预留用于未来扩展
+
+#### src/data/
+- **功能**：存放数据文件
+- **用途**：静态数据、配置数据等
+
+##### src/data/quotes.js
+- **功能**：心动折页情话数据
+- **内容**：
+  - QUOTES：情话数组，包含文字、颜色、情绪类型
+  - MOOD_CONFIG：情绪配置，包含动画效果、卡片样式
+- **使用方式**：被心动折页模块调用
 
 #### src/utils/
 存放工具函数和配置文件
@@ -112,18 +140,62 @@ jingwithyang/
 #### src/styles/
 存放样式文件
 
-##### src/styles/main.css
-- **功能**：全局样式文件
+##### src/styles/base.css
+- **功能**：基础样式和CSS变量
 - **内容**：
   - CSS变量定义（颜色、渐变等）
   - 基础样式（body、容器等）
-  - 响应式布局（移动端适配）
-  - 各功能模块样式
-  - 动画效果
-  - 相册和照片样式
-  - 上传弹窗样式
+  - 通用工具类
+
+##### src/styles/components.css
+- **功能**：组件样式
+- **内容**：
+  - 按钮样式
+  - 卡片样式
+  - 模态框样式
+  - 通用组件样式
+
+##### src/styles/layout.css
+- **功能**：布局样式
+- **内容**：
+  - 侧边栏样式
+  - 页面布局
+  - 响应式布局
+  - 导航样式
+
+##### src/styles/features/
+- **功能**：功能模块样式
+- **用途**：按功能划分的样式文件
+
+###### src/styles/features/calendar.css
+- **功能**：日历功能样式
+- **内容**：
+  - 日历容器样式
+  - 日期样式
+  - 特殊日期标记
   - 照片详情样式
-- **特点**：包含完整的移动端适配样式
+
+###### src/styles/features/dice.css
+- **功能**：掷骰子功能样式
+- **内容**：
+  - 骰子容器样式
+  - 骰子动画
+  - 结果显示样式
+
+###### src/styles/features/heart-flip.css
+- **功能**：心动折页功能样式
+- **内容**：
+  - 卡片3D效果
+  - 翻转动画
+  - 情绪样式
+  - 粒子效果
+
+##### src/styles/main.css
+- **功能**：主样式文件
+- **内容**：
+  - 导入其他样式文件
+  - 全局样式覆盖
+  - 动画效果
 
 #### src/features/
 按功能划分的模块文件夹
@@ -204,6 +276,22 @@ jingwithyang/
   - finalRoll()：显示最终结果
 - **全局实例**：diceGame
 
+##### src/features/heart-flip/
+心动折页功能模块
+
+###### src/features/heart-flip/heart-flip.js
+- **功能**：心动折页实现
+- **类名**：HeartFlip
+- **主要方法**：
+  - show()：显示心动折页模态框
+  - initCard()：初始化卡片
+  - getRandomQuote()：获取随机情话
+  - updateCardContent(quote)：更新卡片内容
+  - bindEvents()：绑定事件
+  - handleFlip(direction)：处理翻页
+  - createHeartParticles()：创建爱心粒子效果
+- **全局实例**：heartFlip
+
 ##### src/features/lab/
 实验室功能模块
 - **当前状态**：空目录，预留用于未来扩展
@@ -229,11 +317,13 @@ index.html
 ├── src/utils/helpers.js
 ├── src/utils/image-utils.js
 ├── src/utils/storage.js
+├── src/data/quotes.js
 ├── src/features/login/login.js
 ├── src/features/home/home.js
 ├── src/features/calendar/calendar.js
 ├── src/features/dice/dice.js
 ├── src/features/album/album.js
+├── src/features/heart-flip/heart-flip.js
 └── src/app.js
 ```
 
@@ -254,7 +344,9 @@ src/app.js
 │   └── src/utils/storage.js
 ├── src/features/album/album.js
 │   └── src/utils/storage.js
-└── src/features/dice/dice.js
+├── src/features/dice/dice.js
+└── src/features/heart-flip/heart-flip.js
+    ├── src/data/quotes.js
 ```
 
 ## 代码规范
@@ -316,6 +408,7 @@ python -m http.server 8000
 - 点击查看照片大图
 - 照片预览和删除
 - 筛选功能
+- **图片懒加载**：提升页面加载速度
 
 ### 5. 照片上传功能
 - 点击或拖拽上传照片
@@ -330,6 +423,14 @@ python -m http.server 8000
 - 显示掷骰结果
 - 支持重复掷骰
 
+### 7. 心动折页功能
+- 3D卡片翻页效果
+- 随机情话展示
+- 情绪分类（微甜、深情、调皮）
+- 左右滑动查看历史记录
+- 卡片随手势转动
+- 爱心粒子效果
+
 ## 移动端适配
 
 项目包含完整的移动端适配样式，支持：
@@ -343,16 +444,17 @@ python -m http.server 8000
 ### 添加新功能模块
 1. 在 `src/features/` 下创建新文件夹
 2. 创建对应的JavaScript文件
-3. 在 `index.html` 中引入新文件
-4. 在 `src/app.js` 中添加初始化逻辑
+3. 在 `src/styles/features/` 下创建对应的CSS文件
+4. 在 `index.html` 中引入新文件
+5. 在 `src/app.js` 中添加初始化逻辑
 
 ### 添加新样式
-1. 在 `src/styles/main.css` 中添加样式
-2. 或创建新的CSS文件并在 `index.html` 中引入
+1. 在 `src/styles/features/` 中添加新的CSS文件
+2. 在 `src/styles/main.css` 中导入新样式文件
 
-### 添加新工具函数
-1. 在 `src/utils/helpers.js` 中添加函数
-2. 确保函数有清晰的注释和参数说明
+### 添加新数据文件
+1. 在 `src/data/` 下创建新文件
+2. 在需要的模块中引入使用
 
 ### 接入 Supabase（替代 localStorage）
 1. 创建 Supabase 项目
@@ -404,6 +506,8 @@ python -m http.server 8000
 
 ## 版本历史
 
+- v2.2：性能优化（图片懒加载），CSS模块化完善，移动端兼容性修复
+- v2.1：添加心动折页功能，CSS模块化重构
 - v2.0：模块化重构，提升代码可维护性
 - v1.0：初始版本
 
