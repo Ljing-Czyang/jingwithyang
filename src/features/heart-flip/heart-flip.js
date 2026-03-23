@@ -8,9 +8,20 @@ class HeartFlip {
         this.modal = null;
         this.touchStartX = 0;
         this.touchStartY = 0;
+        this.dragState = {
+            isDragging: false,
+            startX: null,
+            startY: null
+        };
+        this.boundEvents = null;
+        this.pendingTimeouts = [];
     }
 
     show() {
+        if (this.modal) {
+            this.close();
+        }
+
         this.modal = document.createElement('div');
         this.modal.className = 'heart-flip-modal';
         this.modal.innerHTML = `
@@ -104,7 +115,43 @@ class HeartFlip {
         if (counterEl) counterEl.textContent = this.currentIndex;
         
         const totalEl = document.getElementById('total-quotes');
-        if (totalEl) totalEl.textContent = this.history.length;
+        if (totalEl) totalEl.textContent = QUOTES.length;
+    }
+
+    setManagedTimeout(callback, delay) {
+        const timeoutId = setTimeout(() => {
+            this.pendingTimeouts = this.pendingTimeouts.filter(id => id !== timeoutId);
+            callback();
+        }, delay);
+
+        this.pendingTimeouts.push(timeoutId);
+        return timeoutId;
+    }
+
+    clearPendingTimeouts() {
+        this.pendingTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
+        this.pendingTimeouts = [];
+    }
+
+    unbindEvents() {
+        if (!this.boundEvents) return;
+
+        const cardContainer = document.getElementById('card-container');
+        if (cardContainer) {
+            cardContainer.removeEventListener('click', this.boundEvents.click);
+            cardContainer.removeEventListener('touchstart', this.boundEvents.touchstart);
+            cardContainer.removeEventListener('touchmove', this.boundEvents.touchmove);
+            cardContainer.removeEventListener('touchend', this.boundEvents.touchend);
+            cardContainer.removeEventListener('mousedown', this.boundEvents.mousedown);
+        }
+
+        document.removeEventListener('mousemove', this.boundEvents.mousemove);
+        document.removeEventListener('mouseup', this.boundEvents.mouseup);
+
+        this.boundEvents = null;
+        this.dragState.isDragging = false;
+        this.dragState.startX = null;
+        this.dragState.startY = null;
     }
 
     bindEvents() {
@@ -112,31 +159,25 @@ class HeartFlip {
         const card = document.getElementById('flip-card');
         if (!cardContainer || !card) return;
 
-        let isDragging = false;
-        let dragStartX = 0;
-        let dragStartY = 0;
+        this.unbindEvents();
 
-        cardContainer.addEventListener('click', (e) => {
-            if (!isDragging) {
-                this.handleFlip('next');
-            }
-        });
-        
         const handleStart = (x, y) => {
-            isDragging = false;
-            dragStartX = x;
-            dragStartY = y;
+            this.dragState.isDragging = false;
+            this.dragState.startX = x;
+            this.dragState.startY = y;
             this.touchStartX = x;
             this.touchStartY = y;
             card.style.transition = 'none';
         };
         
         const handleMove = (x, y) => {
-            const deltaX = x - dragStartX;
-            const deltaY = y - dragStartY;
+            if (this.dragState.startX === null || this.dragState.startY === null) return;
+
+            const deltaX = x - this.dragState.startX;
+            const deltaY = y - this.dragState.startY;
             
             if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
-                isDragging = true;
+                this.dragState.isDragging = true;
             }
             
             const rotateY = deltaX / 10;
@@ -146,6 +187,8 @@ class HeartFlip {
         };
         
         const handleEnd = (x) => {
+            if (this.dragState.startX === null || this.dragState.startY === null) return;
+
             const deltaX = x - this.touchStartX;
             
             card.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
@@ -156,42 +199,49 @@ class HeartFlip {
             } else if (deltaX < -50) {
                 this.handleFlip('next');
             }
+
+            this.dragState.startX = null;
+            this.dragState.startY = null;
             
-            setTimeout(() => {
-                isDragging = false;
+            this.setManagedTimeout(() => {
+                this.dragState.isDragging = false;
             }, 50);
         };
-        
-        cardContainer.addEventListener('touchstart', (e) => {
-            handleStart(e.changedTouches[0].screenX, e.changedTouches[0].screenY);
-        }, { passive: true });
-        
-        cardContainer.addEventListener('touchmove', (e) => {
-            handleMove(e.changedTouches[0].screenX, e.changedTouches[0].screenY);
-        }, { passive: true });
-        
-        cardContainer.addEventListener('touchend', (e) => {
-            handleEnd(e.changedTouches[0].screenX);
-        }, { passive: true });
-        
-        cardContainer.addEventListener('mousedown', (e) => {
-            handleStart(e.screenX, e.screenY);
-            e.preventDefault();
-        });
-        
-        document.addEventListener('mousemove', (e) => {
-            if (dragStartX !== 0 || dragStartY !== 0) {
+
+        this.boundEvents = {
+            click: () => {
+                if (!this.dragState.isDragging) {
+                    this.handleFlip('next');
+                }
+            },
+            touchstart: (e) => {
+                handleStart(e.changedTouches[0].screenX, e.changedTouches[0].screenY);
+            },
+            touchmove: (e) => {
+                handleMove(e.changedTouches[0].screenX, e.changedTouches[0].screenY);
+            },
+            touchend: (e) => {
+                handleEnd(e.changedTouches[0].screenX);
+            },
+            mousedown: (e) => {
+                handleStart(e.screenX, e.screenY);
+                e.preventDefault();
+            },
+            mousemove: (e) => {
                 handleMove(e.screenX, e.screenY);
-            }
-        });
-        
-        document.addEventListener('mouseup', (e) => {
-            if (dragStartX !== 0 || dragStartY !== 0) {
+            },
+            mouseup: (e) => {
                 handleEnd(e.screenX);
-                dragStartX = 0;
-                dragStartY = 0;
             }
-        });
+        };
+
+        cardContainer.addEventListener('click', this.boundEvents.click);
+        cardContainer.addEventListener('touchstart', this.boundEvents.touchstart, { passive: true });
+        cardContainer.addEventListener('touchmove', this.boundEvents.touchmove, { passive: true });
+        cardContainer.addEventListener('touchend', this.boundEvents.touchend, { passive: true });
+        cardContainer.addEventListener('mousedown', this.boundEvents.mousedown);
+        document.addEventListener('mousemove', this.boundEvents.mousemove);
+        document.addEventListener('mouseup', this.boundEvents.mouseup);
     }
 
     handleFlip(direction = 'next') {
@@ -199,14 +249,17 @@ class HeartFlip {
         this.isFlipping = true;
         
         const card = document.getElementById('flip-card');
-        if (!card) return;
+        if (!card) {
+            this.isFlipping = false;
+            return;
+        }
         
         const flipClass = direction === 'next' ? 'is-flipping-next' : 'is-flipping-prev';
         card.classList.add(flipClass);
         
         this.triggerHapticFeedback();
         
-        setTimeout(() => {
+        this.setManagedTimeout(() => {
             let newQuote;
             
             if (direction === 'prev' && this.historyIndex > 0) {
@@ -231,7 +284,7 @@ class HeartFlip {
             this.updateCardContent(newQuote);
         }, 300);
         
-        setTimeout(() => {
+        this.setManagedTimeout(() => {
             card.classList.remove(flipClass);
             this.isFlipping = false;
         }, 600);
@@ -262,12 +315,16 @@ class HeartFlip {
             container.appendChild(particle);
         }
         
-        setTimeout(() => {
+        this.setManagedTimeout(() => {
             container.innerHTML = '';
         }, 2000);
     }
 
     close() {
+        this.clearPendingTimeouts();
+        this.unbindEvents();
+        this.isFlipping = false;
+
         if (this.modal) {
             this.modal.remove();
             this.modal = null;

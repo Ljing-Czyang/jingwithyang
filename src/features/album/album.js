@@ -58,7 +58,8 @@ class AlbumFeature {
         const container = document.getElementById('view-album');
         if (!container) return;
 
-        const groupedPhotos = this.groupPhotosByDate();
+        const sortedPhotos = this.getSortedPhotos();
+        const groupedPhotos = this.groupPhotosByDate(sortedPhotos);
 
         let html = `
             <div class="album-container">
@@ -72,7 +73,7 @@ class AlbumFeature {
                 <div class="album-content">
         `;
 
-        if (Object.keys(groupedPhotos).length === 0) {
+        if (sortedPhotos.length === 0) {
             html += `
                 <div class="album-empty">
                     <div class="album-empty-icon">📷</div>
@@ -80,28 +81,27 @@ class AlbumFeature {
                     <p class="album-empty-hint">去日历上传第一张照片吧~</p>
                 </div>
             `;
+        } else if (this.currentFilter === 'all') {
+            html += `<div class="album-photo-grid">`;
+            sortedPhotos.forEach(photo => {
+                html += this.renderPhotoCard(photo);
+            });
+            html += `</div>`;
         } else {
-            for (const [date, photos] of Object.entries(groupedPhotos)) {
+            groupedPhotos.forEach(({ date, photos }) => {
                 html += `
                     <div class="album-date-group">
                         <div class="album-date-title">📅 ${date}</div>
                         <div class="album-photo-grid">
                 `;
                 photos.forEach(photo => {
-                    html += `
-                        <div class="album-photo-item" onclick="albumFeature.showPhotoDetail('${photo.id}')">
-                            <img src="${photo.thumbnailUrl}" alt="${photo.title}" loading="lazy">
-                            <div class="album-photo-overlay">
-                                <span class="album-photo-avatar">${photo.uploadedByAvatar}</span>
-                            </div>
-                        </div>
-                    `;
+                    html += this.renderPhotoCard(photo);
                 });
                 html += `
                         </div>
                     </div>
                 `;
-            }
+            });
         }
 
         html += `
@@ -112,15 +112,41 @@ class AlbumFeature {
         container.innerHTML = html;
     }
 
-    groupPhotosByDate() {
-        const grouped = {};
-        this.photos.forEach(photo => {
-            if (!grouped[photo.date]) {
-                grouped[photo.date] = [];
-            }
-            grouped[photo.date].push(photo);
+    renderPhotoCard(photo) {
+        return `
+            <div class="album-photo-item" onclick="albumFeature.showPhotoDetail('${photo.id}')">
+                <img src="${photo.thumbnailUrl}" alt="${photo.title}" loading="lazy">
+                <div class="album-photo-overlay">
+                    <span class="album-photo-avatar">${photo.uploadedByAvatar}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    getPhotoSortValue(photo) {
+        return photo.createdAt || photo.created_at || photo.date || '';
+    }
+
+    getSortedPhotos() {
+        return [...this.photos].sort((a, b) => {
+            return this.getPhotoSortValue(b).localeCompare(this.getPhotoSortValue(a));
         });
-        return grouped;
+    }
+
+    groupPhotosByDate(photos = this.getSortedPhotos()) {
+        const grouped = new Map();
+
+        photos.forEach(photo => {
+            if (!grouped.has(photo.date)) {
+                grouped.set(photo.date, []);
+            }
+            grouped.get(photo.date).push(photo);
+        });
+
+        return Array.from(grouped.entries()).map(([date, groupedPhotos]) => ({
+            date,
+            photos: groupedPhotos
+        }));
     }
 
     setFilter(filter) {
@@ -129,8 +155,11 @@ class AlbumFeature {
     }
 
     async showPhotoDetail(photoId) {
-        const photos = await storage.getPhotos();
-        const photo = photos.find(p => p.id === photoId);
+        let photo = this.photos.find(p => p.id === photoId);
+        if (!photo) {
+            this.photos = await storage.getPhotos();
+            photo = this.photos.find(p => p.id === photoId);
+        }
         if (!photo) return;
 
         const modal = document.createElement('div');

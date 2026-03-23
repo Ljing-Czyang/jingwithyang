@@ -4,6 +4,14 @@ class CoupleCalendar {
         this.cachedPhotos = [];
     }
 
+    clearTransientModals() {
+        document.querySelectorAll('.date-detail-modal, .date-photos-modal, .upload-modal, .photo-detail-modal').forEach(el => el.remove());
+    }
+
+    getPhotoDateSet(photos = []) {
+        return new Set(photos.filter(photo => photo.date).map(photo => photo.date));
+    }
+
     renderLoadingView() {
         return `
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px;">
@@ -103,6 +111,7 @@ class CoupleCalendar {
         const lastDay = new Date(year, month + 1, 0);
         const daysInMonth = lastDay.getDate();
         const startDayOfWeek = firstDay.getDay();
+        const photoDateSet = this.getPhotoDateSet(photos);
         
         let html = `
             <div class="calendar-header">
@@ -131,8 +140,7 @@ class CoupleCalendar {
             const isToday = isSameDay(date, new Date());
             const isSpecial = this.isSpecialDate(dateStr);
             const isAnniversary = day === CONFIG.monthlyAnniversary;
-            const dayPhotos = photos.filter(p => p.date === dateStr);
-            const hasPhotos = dayPhotos.length > 0;
+            const hasPhotos = photoDateSet.has(dateStr);
             
             let classes = 'calendar-day';
             if (isToday) classes += ' today';
@@ -195,7 +203,7 @@ class CoupleCalendar {
     }
 
     async showDateDetails(dateStr) {
-        document.querySelectorAll('.date-detail-modal, .date-photos-modal, .upload-modal, .photo-detail-modal').forEach(el => el.remove());
+        this.clearTransientModals();
         
         const specialDate = CONFIG.specialDates.find(d => d.date === dateStr);
         const event = CONFIG.events.find(e => e.date === dateStr);
@@ -261,7 +269,7 @@ class CoupleCalendar {
     }
 
     async showDatePhotos(dateStr, dateModal) {
-        document.querySelectorAll('.date-detail-modal, .date-photos-modal, .upload-modal, .photo-detail-modal').forEach(el => el.remove());
+        this.clearTransientModals();
         
         const photos = await storage.getPhotosByDate(dateStr);
         
@@ -314,15 +322,18 @@ class CoupleCalendar {
     }
 
     async closeDatePhotos(dateStr) {
-        document.querySelectorAll('.date-detail-modal, .date-photos-modal, .upload-modal, .photo-detail-modal').forEach(el => el.remove());
+        this.clearTransientModals();
         await this.showDateDetails(dateStr);
     }
 
     async showPhotoDetail(photoId, dateStr) {
-        document.querySelectorAll('.date-detail-modal, .date-photos-modal, .upload-modal, .photo-detail-modal').forEach(el => el.remove());
+        this.clearTransientModals();
         
-        const photos = await storage.getPhotos();
-        const photo = photos.find(p => p.id === photoId);
+        let photo = this.cachedPhotos.find(p => p.id === photoId);
+        if (!photo) {
+            this.cachedPhotos = await storage.getPhotos();
+            photo = this.cachedPhotos.find(p => p.id === photoId);
+        }
         if (!photo) return;
 
         const modal = document.createElement('div');
@@ -363,7 +374,7 @@ class CoupleCalendar {
     }
 
     showUploadModal(dateStr) {
-        document.querySelectorAll('.date-detail-modal, .date-photos-modal, .upload-modal, .photo-detail-modal').forEach(el => el.remove());
+        this.clearTransientModals();
         
         const modal = document.createElement('div');
         modal.className = 'upload-modal';

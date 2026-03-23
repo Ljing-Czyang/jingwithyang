@@ -10,7 +10,9 @@
         if (window.matchMedia && window.matchMedia('(max-width: 767px)').matches) {
             document.getElementById('main-stylesheet').onerror = function() {
                 console.error('CSS加载失败，尝试备用路径');
-                this.href = 'styles/main.css';
+                if (this.dataset.retried === 'true') return;
+                this.dataset.retried = 'true';
+                this.href = './src/styles/main.css';
             };
         }
     </script>

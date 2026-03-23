@@ -1,20 +1,13 @@
 class DiceGame {
     constructor() {
         this.rolling = false;
-        this.diceValues = [1, 2, 3, 4, 5, 6];
         this.diceEmojis = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
         this.currentInterval = null;
+        this.modal = null;
     }
 
     roll() {
-        if (this.rolling) return;
-        
-        const existingModal = document.querySelector('.dice-modal');
-        if (existingModal) {
-            existingModal.remove();
-        }
-        
-        this.rolling = true;
+        this.close();
         
         const modal = document.createElement('div');
         modal.className = 'dice-modal';
@@ -22,7 +15,7 @@ class DiceGame {
             <div class="dice-content">
                 <div class="dice-header">
                     <h3>🎲 掷骰子</h3>
-                    <button onclick="this.closest('.dice-modal').remove(); diceGame.clearInterval();">✕</button>
+                    <button onclick="diceGame.close()">✕</button>
                 </div>
                 <div class="dice-body">
                     <div class="dice-display">
@@ -37,6 +30,8 @@ class DiceGame {
         `;
         
         document.body.appendChild(modal);
+        this.modal = modal;
+        this.rolling = false;
         
         const rollBtn = document.getElementById('dice-roll-btn');
         if (rollBtn) {
@@ -51,13 +46,31 @@ class DiceGame {
         }
     }
 
+    close() {
+        this.clearInterval();
+        this.rolling = false;
+
+        if (this.modal) {
+            this.modal.remove();
+            this.modal = null;
+            return;
+        }
+
+        const existingModal = document.querySelector('.dice-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+    }
+
     startRolling() {
+        if (this.rolling) return;
+
         const diceResult = document.getElementById('dice-result');
         const rollBtn = document.getElementById('dice-roll-btn');
         const hint = document.querySelector('.dice-hint');
         
         if (!diceResult || !rollBtn || !hint) {
-            this.clearInterval();
+            this.close();
             return;
         }
         
@@ -88,7 +101,7 @@ class DiceGame {
         const hint = document.querySelector('.dice-hint');
         
         if (!diceResult || !rollBtn || !hint) {
-            this.rolling = false;
+            this.close();
             return;
         }
         

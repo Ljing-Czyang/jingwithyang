@@ -138,7 +138,7 @@ class StorageManager {
                 uploadedBy: info.id,
                 uploadedByName: info.name,
                 uploadedByAvatar: info.avatar,
-                created_at: new Date().toISOString(),
+                createdAt: new Date().toISOString(),
                 isPrivate: false
             };
 
