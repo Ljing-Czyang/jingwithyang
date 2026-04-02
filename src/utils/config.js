@@ -3,9 +3,10 @@ const CONFIG = {
     startDate: "2026-01-21",
     loveLetter: "我不擅长写情话，<br>但我只想把你和我的每一天，<br>都按一次 Ctrl+S。<br><br>Forever Love. ❤️",
     specialDates: [
-        { date: "2026-01-21", title: "💕 我们在一起", type: "start" },
-        { date: "2026-02-25", title: "💝 第一次约会", type: "special" },
-        { date: "2026-05-20", title: "❤️ 520", type: "special" }
+        { date: "2026-01-21", title: "💕 故事开始的这一天", type: "start" },
+        { date: "2026-02-25", title: "💝 第一次心动约会", type: "special" },
+        { date: "2026-05-20", title: "❤️ 久别重逢的拥抱", type: "special" }
+//      { date: "2026-05-20", title: "🌹 520·我爱你", type: "special" }
     ],
     monthlyAnniversary: 21,
     events: [
