@@ -3,7 +3,7 @@ const LETTERS_DATA = {
         {
             id: 'jing',
             title: '春日来信',
-            subtitle: '写给未来的你',
+            subtitle: '写给亲爱的你',
             color: '#15c750',
             bgColor: '#E8F5E9',
             coverIcon: '🌿',
