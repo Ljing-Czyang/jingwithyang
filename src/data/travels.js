@@ -26,17 +26,6 @@ const TRAVELS_DATA = {
                             icon: '🚄'
                         },
                         {
-                            id: 'n1-2',
-                            name: '玄武湖',
-                            lat: 32.0723,
-                            lng: 118.7965,
-                            time: '15:30',
-                            transport: 'walk',
-                            transportLabel: '步行',
-                            description: '途经玄武湖，湖边漫步',
-                            icon: '🌊'
-                        },
-                        {
                             id: 'n1-3',
                             name: '南京站',
                             lat: 32.0848,
@@ -48,10 +37,21 @@ const TRAVELS_DATA = {
                             icon: '🚉'
                         },
                         {
+                            id: 'n1-2',
+                            name: '玄武湖',
+                            lat: 32.085792,
+                            lng: 118.79429,
+                            time: '15:30',
+                            transport: 'walk',
+                            transportLabel: '步行',
+                            description: '途经玄武湖，湖边漫步',
+                            icon: '🌊'
+                        },
+                        {
                             id: 'n1-4',
                             name: '汉庭宾馆',
-                            lat: 32.0561,
-                            lng: 118.7838,
+                            lat: 32.088567,
+                            lng: 118.790242,
                             time: '17:30',
                             transport: 'taxi',
                             transportLabel: '步行',
@@ -68,8 +68,8 @@ const TRAVELS_DATA = {
                         {
                             id: 'n2-1',
                             name: '汉庭宾馆',
-                            lat: 32.0561,
-                            lng: 118.7838,
+                            lat: 32.088567,
+                            lng: 118.790242,
                             time: '09:00',
                             transport: 'walk',
                             transportLabel: '步行',
@@ -100,9 +100,9 @@ const TRAVELS_DATA = {
                         },
                         {
                             id: 'n2-4',
-                            name: '旅馆',
-                            lat: 32.0561,
-                            lng: 118.7838,
+                            name: '汉庭宾馆',
+                            lat: 32.088567,
+                            lng: 118.790242,
                             time: '20:00',
                             transport: 'taxi',
                             transportLabel: '步行+地铁',
@@ -118,9 +118,9 @@ const TRAVELS_DATA = {
                     route: [
                         {
                             id: 'n3-1',
-                            name: '旅馆',
-                            lat: 32.0561,
-                            lng: 118.7838,
+                            name: '汉庭宾馆',
+                            lat: 32.088567,
+                            lng: 118.790242,
                             time: '09:00',
                             transport: 'walk',
                             transportLabel: '步行',
@@ -140,9 +140,9 @@ const TRAVELS_DATA = {
                         },
                         {
                             id: 'n3-3',
-                            name: '旅馆',
-                            lat: 32.0561,
-                            lng: 118.7838,
+                            name: '汉庭宾馆',
+                            lat: 32.088567,
+                            lng: 118.790242,
                             time: '16:00',
                             transport: 'taxi',
                             transportLabel: '步行+地铁',
