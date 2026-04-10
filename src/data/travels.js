@@ -54,7 +54,7 @@ const TRAVELS_DATA = {
                             lng: 118.7838,
                             time: '17:30',
                             transport: 'taxi',
-                            transportLabel: '打车',
+                            transportLabel: '步行',
                             description: '办理入住，安顿下来',
                             icon: '🏨'
                         }
@@ -105,7 +105,7 @@ const TRAVELS_DATA = {
                             lng: 118.7838,
                             time: '20:00',
                             transport: 'taxi',
-                            transportLabel: '打车',
+                            transportLabel: '步行+地铁',
                             description: '回到住处休息',
                             icon: '🏠'
                         }
