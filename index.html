@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Our Memory</title>
     <link rel="stylesheet" href="src/styles/main.css" id="main-stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script>
         if (window.matchMedia && window.matchMedia('(max-width: 767px)').matches) {
             document.getElementById('main-stylesheet').onerror = function() {
@@ -110,6 +111,7 @@
                             <div class="lab-item" onclick="diceGame.roll()">🎲 掷骰子</div>
                             <div class="lab-item" onclick="heartFlip.show()">💕 心动折页</div>
                             <div class="lab-item" onclick="loveLetters.show()">💌 我们的信</div>
+                            <div class="lab-item" onclick="travelMap.show()">🗺️ 旅行足迹</div>
                         </div>
                     </div>
                 </div>
@@ -134,6 +136,7 @@
 
     <!-- JavaScript文件加载 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="src/utils/config.js"></script>
     <script src="src/utils/dom.js"></script>
     <script src="src/utils/helpers.js"></script>
@@ -141,6 +144,7 @@
     <script src="src/utils/storage.js"></script>
     <script src="src/data/quotes.js"></script>
     <script src="src/data/letters.js"></script>
+    <script src="src/data/travels.js"></script>
     <script src="src/features/login/login.js"></script>
     <script src="src/features/home/home.js"></script>
     <script src="src/features/calendar/calendar.js"></script>
@@ -148,6 +152,7 @@
     <script src="src/features/album/album.js"></script>
     <script src="src/features/heart-flip/heart-flip.js"></script>
     <script src="src/features/love-letters/love-letters.js"></script>
+    <script src="src/features/travel-map/travel-map.js"></script>
     <script src="src/app.js"></script>
 </body>
 </html>

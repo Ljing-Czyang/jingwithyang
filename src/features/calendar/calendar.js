@@ -270,9 +270,9 @@ class CoupleCalendar {
 
     async showDatePhotos(dateStr, dateModal) {
         this.clearTransientModals();
-        
+
         const photos = await storage.getPhotosByDate(dateStr);
-        
+
         let html = `
             <div class="date-photos-modal" id="date-photos-${dateStr}">
                 <div class="date-photos-content">
@@ -283,13 +283,17 @@ class CoupleCalendar {
                     </div>
                     <div class="date-photos-body">
         `;
-        
+
         if (photos.length > 0) {
             html += `<div class="date-photos-grid-full">`;
-            photos.forEach(photo => {
+            photos.forEach((photo, index) => {
                 html += `
                     <div class="date-photo-item-full" onclick="calendar.showPhotoDetail('${photo.id}', '${dateStr}')">
-                        <img src="${photo.thumbnailUrl}" alt="${photo.title}">
+                        <div class="img-skeleton"></div>
+                        <img data-src="${photo.thumbnailUrl}" alt="${photo.title}"
+                             loading="lazy"
+                             onload="this.classList.add('loaded'); this.previousElementSibling.style.display='none'"
+                             onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f0f0f0%22 width=%22100%22 height=%22100%22/><text x=%2250%%22 y=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%2214%22>加载失败</text></svg>'">
                         <div class="date-photo-overlay-full">
                             <span class="date-photo-avatar-full">${photo.uploadedByAvatar}</span>
                         </div>
@@ -306,7 +310,7 @@ class CoupleCalendar {
                 </div>
             `;
         }
-        
+
         html += `
                     </div>
                     <div class="date-photos-footer">
@@ -315,10 +319,12 @@ class CoupleCalendar {
                 </div>
             </div>
         `;
-        
+
         const modal = document.createElement('div');
         modal.innerHTML = html;
         document.body.appendChild(modal);
+
+        this.initLazyLoad(modal);
     }
 
     async closeDatePhotos(dateStr) {
@@ -328,7 +334,7 @@ class CoupleCalendar {
 
     async showPhotoDetail(photoId, dateStr) {
         this.clearTransientModals();
-        
+
         let photo = this.cachedPhotos.find(p => p.id === photoId);
         if (!photo) {
             this.cachedPhotos = await storage.getPhotos();
@@ -345,7 +351,12 @@ class CoupleCalendar {
                     <button onclick="this.closest('.photo-detail-modal').remove()">✕</button>
                 </div>
                 <div class="photo-detail-body">
-                    <img src="${photo.imageUrl}" alt="${photo.title}">
+                    <div class="photo-img-wrapper">
+                        <div class="img-loading-skeleton"></div>
+                        <img data-src="${photo.imageUrl}" alt="${photo.title}"
+                             onload="this.classList.add('loaded'); this.previousElementSibling.style.display='none'"
+                             onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 150%22><rect fill=%22%23f0f0f0%22 width=%22200%22 height=%22150%22/><text x=%2250%%22 y=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%23999%22>加载失败</text></svg>'">
+                    </div>
                     <div class="photo-detail-info">
                         <div class="photo-detail-date">📅 ${photo.date}</div>
                         ${photo.description ? `<div class="photo-detail-desc">${photo.description}</div>` : ''}
@@ -361,6 +372,8 @@ class CoupleCalendar {
             </div>
         `;
         document.body.appendChild(modal);
+
+        this.initLazyLoad(modal);
     }
 
     async deletePhoto(photoId, dateStr, modal) {
@@ -522,6 +535,44 @@ class CoupleCalendar {
                 uploadBtn.textContent = '上传';
             }
         });
+    }
+
+    initLazyLoad(container) {
+        const images = container.querySelectorAll('img[data-src]');
+        
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        observer.unobserve(img);
+                    }
+                });
+            }, { rootMargin: '50px' });
+
+            images.forEach(img => observer.observe(img));
+        } else {
+            images.forEach(img => {
+                img.src = img.dataset.src;
+            });
+        }
+    }
+
+    preloadImage(url) {
+        return new Promise((resolve, reject) => {
+            if (!url) { resolve(null); return; }
+            const img = new Image();
+            img.onload = () => resolve(url);
+            img.onerror = () => resolve(null);
+            img.src = url;
+        });
+    }
+
+    async preloadDatePhotos(dateStr) {
+        const photos = await storage.getPhotosByDate(dateStr);
+        const urls = photos.map(p => p.thumbnailUrl).filter(Boolean);
+        await Promise.all(urls.slice(0, 6).map(url => this.preloadImage(url)));
     }
 
     isSpecialDate(dateStr) {
