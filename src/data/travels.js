@@ -134,7 +134,7 @@ const TRAVELS_DATA = {
                             lng: 118.8465,
                             time: '10:00',
                             transport: 'metro',
-                            transportLabel: '地铁+公交',
+                            transportLabel: '地铁',
                             description: '漫步神道，石象路最美',
                             icon: '🌳'
                         },
@@ -145,7 +145,7 @@ const TRAVELS_DATA = {
                             lng: 118.7838,
                             time: '16:00',
                             transport: 'taxi',
-                            transportLabel: '打车',
+                            transportLabel: '步行+地铁',
                             description: '收拾行李，准备返程',
                             icon: '🧳'
                         }
