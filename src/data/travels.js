@@ -22,7 +22,7 @@ const TRAVELS_DATA = {
                             time: '14:00',
                             transport: 'metro',
                             transportLabel: '地铁',
-                            description: '抵达南京，正扬来接我',
+                            description: '抵达南京，终于相见',
                             icon: '🚄'
                         },
                         {
