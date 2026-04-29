@@ -7,12 +7,74 @@ class LoveLetters {
         this.touchStartX = 0;
         this.touchStartY = 0;
         this.boundEvents = null;
+        this.lettersData = null;
+        this.supabase = null;
+        this.initSupabase();
     }
 
-    show() {
+    initSupabase() {
+        try {
+            if (CONFIG.supabase.url !== 'YOUR_SUPABASE_URL' && CONFIG.supabase.anonKey !== 'YOUR_SUPABASE_ANON_KEY') {
+                this.supabase = window.supabase.createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
+            }
+        } catch (error) {
+            console.error('LoveLetters: 初始化 Supabase 失败:', error);
+        }
+    }
+
+    async loadLettersData() {
+        if (this.lettersData) return this.lettersData;
+
+        if (this.supabase) {
+            try {
+                const { data: books, error: booksError } = await this.supabase
+                    .from(CONFIG.supabase.letterBooksTable)
+                    .select('*')
+                    .order('created_at', { ascending: true });
+
+                if (booksError) throw booksError;
+
+                const { data: letters, error: lettersError } = await this.supabase
+                    .from(CONFIG.supabase.lettersTable)
+                    .select('*')
+                    .order('sort_order', { ascending: true });
+
+                if (lettersError) throw lettersError;
+
+                this.lettersData = {
+                    books: books.map(book => ({
+                        id: book.id,
+                        title: book.title,
+                        subtitle: book.subtitle,
+                        color: book.color,
+                        bgColor: book.bg_color,
+                        coverIcon: book.cover_icon,
+                        letters: letters
+                            .filter(letter => letter.book_id === book.id)
+                            .map(letter => ({
+                                date: letter.date,
+                                content: letter.content
+                            }))
+                    }))
+                };
+
+                console.log('LoveLetters: 从 Supabase 加载信件成功');
+                return this.lettersData;
+            } catch (error) {
+                console.error('LoveLetters: 从 Supabase 加载失败，使用本地数据:', error);
+            }
+        }
+
+        this.lettersData = LETTERS_DATA || { books: [] };
+        return this.lettersData;
+    }
+
+    async show() {
         if (this.modal) {
             this.close();
         }
+
+        await this.loadLettersData();
 
         this.modal = document.createElement('div');
         this.modal.className = 'love-letters-modal';
@@ -54,9 +116,9 @@ class LoveLetters {
 
     renderBookCovers() {
         const grid = document.getElementById('booksGrid');
-        if (!grid || !LETTERS_DATA || !LETTERS_DATA.books) return;
+        if (!grid || !this.lettersData || !this.lettersData.books) return;
 
-        grid.innerHTML = LETTERS_DATA.books.map(book => `
+        grid.innerHTML = this.lettersData.books.map(book => `
             <div class="book-cover-item ${book.id === 'jing' ? 'green-book' : 'blue-book'}"
                  data-book-id="${book.id}"
                  onclick="loveLetters.openBook('${book.id}')">
@@ -71,7 +133,7 @@ class LoveLetters {
     }
 
     openBook(bookId) {
-        const book = LETTERS_DATA.books.find(b => b.id === bookId);
+        const book = this.lettersData.books.find(b => b.id === bookId);
         if (!book || !book.letters || book.letters.length === 0) return;
 
         this.currentBook = book;

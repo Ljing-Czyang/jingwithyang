@@ -17,6 +17,8 @@ const CONFIG = {
         url: "https://ajfyswyaqctvcntvzwyx.supabase.co",
         anonKey: "sb_publishable_p68HEA9VFyVFqbpKhjtBqg_T3eIUus8",
         storageBucket: "photos",
-        tableName: "photos"
+        tableName: "photos",
+        letterBooksTable: "letter_books",
+        lettersTable: "letters"
     }
 };
