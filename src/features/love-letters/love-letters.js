@@ -10,6 +10,19 @@ class LoveLetters {
         this.lettersData = null;
         this.supabase = null;
         this.initSupabase();
+        this.prefetch();
+    }
+
+    prefetch() {
+        const cached = this.loadCachedData();
+        if (cached) {
+            this.lettersData = cached;
+        }
+        if (this.supabase) {
+            this.loadLettersData(!cached).then(() => {
+                this.renderBookCovers();
+            });
+        }
     }
 
     initSupabase() {
@@ -22,34 +35,64 @@ class LoveLetters {
         }
     }
 
-    async loadLettersData() {
-        if (this.lettersData) return this.lettersData;
+    loadCachedData() {
+        try {
+            const cached = localStorage.getItem('loveLetters_cache');
+            if (cached) {
+                const { data, timestamp } = JSON.parse(cached);
+                if (Date.now() - timestamp < 5 * 60 * 1000) {
+                    return data;
+                }
+            }
+        } catch (e) {}
+        return null;
+    }
+
+    saveCachedData(data) {
+        try {
+            localStorage.setItem('loveLetters_cache', JSON.stringify({
+                data: data,
+                timestamp: Date.now()
+            }));
+        } catch (e) {}
+    }
+
+    async loadLettersData(forceRefresh) {
+        if (this.lettersData && !forceRefresh) return this.lettersData;
+
+        if (!forceRefresh) {
+            const cached = this.loadCachedData();
+            if (cached) {
+                this.lettersData = cached;
+                return this.lettersData;
+            }
+        }
 
         if (this.supabase) {
             try {
-                const { data: books, error: booksError } = await this.supabase
-                    .from(CONFIG.supabase.letterBooksTable)
-                    .select('*')
-                    .order('created_at', { ascending: true });
+                const [booksResult, lettersResult] = await Promise.all([
+                    this.supabase
+                        .from(CONFIG.supabase.letterBooksTable)
+                        .select('*')
+                        .order('created_at', { ascending: true }),
+                    this.supabase
+                        .from(CONFIG.supabase.lettersTable)
+                        .select('*')
+                        .order('sort_order', { ascending: true })
+                ]);
 
-                if (booksError) throw booksError;
-
-                const { data: letters, error: lettersError } = await this.supabase
-                    .from(CONFIG.supabase.lettersTable)
-                    .select('*')
-                    .order('sort_order', { ascending: true });
-
-                if (lettersError) throw lettersError;
+                if (booksResult.error) throw booksResult.error;
+                if (lettersResult.error) throw lettersResult.error;
 
                 this.lettersData = {
-                    books: books.map(book => ({
+                    books: booksResult.data.map(book => ({
                         id: book.id,
                         title: book.title,
                         subtitle: book.subtitle,
                         color: book.color,
                         bgColor: book.bg_color,
                         coverIcon: book.cover_icon,
-                        letters: letters
+                        letters: lettersResult.data
                             .filter(letter => letter.book_id === book.id)
                             .map(letter => ({
                                 date: letter.date,
@@ -58,6 +101,7 @@ class LoveLetters {
                     }))
                 };
 
+                this.saveCachedData(this.lettersData);
                 console.log('LoveLetters: 从 Supabase 加载信件成功');
                 return this.lettersData;
             } catch (error) {
@@ -74,7 +118,7 @@ class LoveLetters {
             this.close();
         }
 
-        await this.loadLettersData();
+        this.lettersData = this.lettersData || this.loadCachedData() || LETTERS_DATA || { books: [] };
 
         this.modal = document.createElement('div');
         this.modal.className = 'love-letters-modal';
@@ -143,6 +187,12 @@ class LoveLetters {
 
         if ('vibrate' in navigator) {
             navigator.vibrate(10);
+        }
+
+        if (!this.lettersData || this.lettersData.books.length === 0) {
+            this.loadLettersData(true).then(() => {
+                this.renderBookCovers();
+            });
         }
     }
 
@@ -235,7 +285,8 @@ class LoveLetters {
                 if (insertError) throw insertError;
 
                 this.lettersData = null;
-                await this.loadLettersData();
+                localStorage.removeItem('loveLetters_cache');
+                await this.loadLettersData(true);
 
                 if (submitBtn) {
                     submitBtn.textContent = '✅ 寄出成功！';
