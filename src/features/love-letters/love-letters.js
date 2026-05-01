@@ -88,6 +88,7 @@ class LoveLetters {
                 <div class="book-selection-view" id="bookSelectionView">
                     <p class="book-selection-title">选择一本信笺，开启我们的故事</p>
                     <div class="books-grid" id="booksGrid"></div>
+                    <button class="write-letter-btn" id="writeLetterBtn">✍️ 写一封新信</button>
                 </div>
 
                 <div class="book-reading-view" id="bookReadingView">
@@ -100,6 +101,37 @@ class LoveLetters {
                             <button class="nav-btn" id="prevPageBtn">◀ 上一页</button>
                             <button class="nav-btn" id="nextPageBtn">下一页 ▶</button>
                         </div>
+                    </div>
+                </div>
+
+                <div class="write-letter-view" id="writeLetterView">
+                    <button class="book-back-btn" id="backFromWriteBtn">← 返回书架</button>
+                    <div class="write-letter-form">
+                        <h4 class="write-letter-title">✍️ 写一封新信</h4>
+                        <div class="write-form-group">
+                            <label>写给谁</label>
+                            <div class="book-select-group" id="bookSelectGroup">
+                                <div class="book-select-item selected" data-book-id="jing" onclick="loveLetters.selectBook('jing')">
+                                    <span>🌿</span> 春日来信
+                                </div>
+                                <div class="book-select-item" data-book-id="yang" onclick="loveLetters.selectBook('yang')">
+                                    <span>🌙</span> 星空寄语
+                                </div>
+                            </div>
+                        </div>
+                        <div class="write-form-group">
+                            <label for="letterDate">日期</label>
+                            <input type="text" id="letterDate" class="write-input" placeholder="如：2026.05.20" />
+                        </div>
+                        <div class="write-form-group">
+                            <label for="letterTitle">标题 <span class="optional">(可选)</span></label>
+                            <input type="text" id="letterTitle" class="write-input" placeholder="信件标题" />
+                        </div>
+                        <div class="write-form-group flex-1">
+                            <label for="letterContent">正文</label>
+                            <textarea id="letterContent" class="write-textarea" placeholder="写下你想说的话..."></textarea>
+                        </div>
+                        <button class="submit-letter-btn" id="submitLetterBtn">寄出这封信 💌</button>
                     </div>
                 </div>
             </div>
@@ -126,10 +158,116 @@ class LoveLetters {
                     <div class="book-cover-icon">${book.coverIcon}</div>
                     <div class="book-cover-title">${book.title}</div>
                     <div class="book-cover-subtitle">${book.subtitle}</div>
+                    <div class="book-letter-count">${book.letters.length} 封信</div>
                     <div class="book-decoration"></div>
                 </div>
             </div>
         `).join('');
+    }
+
+    selectBook(bookId) {
+        document.querySelectorAll('.book-select-item').forEach(item => {
+            item.classList.toggle('selected', item.dataset.bookId === bookId);
+        });
+    }
+
+    showWriteView() {
+        const selectionView = document.getElementById('bookSelectionView');
+        const writeView = document.getElementById('writeLetterView');
+        if (selectionView && writeView) {
+            selectionView.style.display = 'none';
+            writeView.classList.add('active');
+        }
+
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`;
+        const dateInput = document.getElementById('letterDate');
+        if (dateInput) dateInput.value = dateStr;
+
+        this.selectBook('jing');
+    }
+
+    async submitLetter() {
+        const bookId = document.querySelector('.book-select-item.selected')?.dataset.bookId || 'jing';
+        const date = document.getElementById('letterDate')?.value?.trim();
+        const title = document.getElementById('letterTitle')?.value?.trim();
+        const content = document.getElementById('letterContent')?.value?.trim();
+
+        if (!date) {
+            alert('请填写日期');
+            return;
+        }
+        if (!content) {
+            alert('请写点什么吧');
+            return;
+        }
+
+        const submitBtn = document.getElementById('submitLetterBtn');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = '寄送中...';
+        }
+
+        const paragraphs = content.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('\n');
+        const titleHtml = title ? `<h4 style="text-align:center; margin-bottom:20px; font-weight:600;">${title}</h4>\n` : '';
+        const htmlContent = `${titleHtml}${paragraphs}`;
+
+        if (this.supabase) {
+            try {
+                const { data: existingLetters, error: countError } = await this.supabase
+                    .from(CONFIG.supabase.lettersTable)
+                    .select('sort_order')
+                    .eq('book_id', bookId)
+                    .order('sort_order', { ascending: false })
+                    .limit(1);
+
+                const maxOrder = existingLetters && existingLetters.length > 0 ? existingLetters[0].sort_order : 0;
+
+                const { error: insertError } = await this.supabase
+                    .from(CONFIG.supabase.lettersTable)
+                    .insert([{
+                        book_id: bookId,
+                        date: date,
+                        content: htmlContent,
+                        sort_order: maxOrder + 1
+                    }]);
+
+                if (insertError) throw insertError;
+
+                this.lettersData = null;
+                await this.loadLettersData();
+
+                if (submitBtn) {
+                    submitBtn.textContent = '✅ 寄出成功！';
+                    submitBtn.style.background = '#4CAF50';
+                }
+
+                setTimeout(() => {
+                    this.goToBookSelection();
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = '寄出这封信 💌';
+                        submitBtn.style.background = '';
+                    }
+                }, 1200);
+
+                return;
+            } catch (error) {
+                console.error('LoveLetters: 保存信件失败:', error);
+                alert('保存失败，请重试');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '寄出这封信 💌';
+                }
+                return;
+            }
+        }
+
+        alert('未连接 Supabase，无法保存信件');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '寄出这封信 💌';
+        }
     }
 
     openBook(bookId) {
@@ -252,14 +390,16 @@ class LoveLetters {
     goToBookSelection() {
         const selectionView = document.getElementById('bookSelectionView');
         const readingView = document.getElementById('bookReadingView');
+        const writeView = document.getElementById('writeLetterView');
 
-        if (selectionView && readingView) {
-            selectionView.style.display = 'block';
-            readingView.classList.remove('active');
-        }
+        if (selectionView) selectionView.style.display = 'block';
+        if (readingView) readingView.classList.remove('active');
+        if (writeView) writeView.classList.remove('active');
 
         this.currentBook = null;
         this.currentPageIndex = 0;
+
+        this.renderBookCovers();
     }
 
     bindEvents() {
@@ -273,10 +413,16 @@ class LoveLetters {
         const prevBtn = document.getElementById('prevPageBtn');
         const nextBtn = document.getElementById('nextPageBtn');
         const backBtn = document.getElementById('backToBooksBtn');
+        const writeBtn = document.getElementById('writeLetterBtn');
+        const backFromWriteBtn = document.getElementById('backFromWriteBtn');
+        const submitBtn = document.getElementById('submitLetterBtn');
 
         if (prevBtn) prevBtn.addEventListener('click', handlePrev);
         if (nextBtn) nextBtn.addEventListener('click', handleNext);
         if (backBtn) backBtn.addEventListener('click', () => this.goToBookSelection());
+        if (writeBtn) writeBtn.addEventListener('click', () => this.showWriteView());
+        if (backFromWriteBtn) backFromWriteBtn.addEventListener('click', () => this.goToBookSelection());
+        if (submitBtn) submitBtn.addEventListener('click', () => this.submitLetter());
 
         const wrapper = document.getElementById('pagesWrapper');
         if (!wrapper) return;

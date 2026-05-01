@@ -65,11 +65,26 @@ class TravelMap {
             preferCanvas: true
         }).setView([32.0608, 118.7969], 12);
 
-        L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+        const gaodeLayer = L.tileLayer('https://wprd0{s}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=7&ltype=0', {
             maxZoom: 18,
             subdomains: '1234',
             attribution: ''
-        }).addTo(this.map);
+        });
+
+        const osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: ''
+        });
+
+        gaodeLayer.on('tileerror', () => {
+            if (!this.map.hasLayer(osmLayer)) {
+                this.map.removeLayer(gaodeLayer);
+                osmLayer.addTo(this.map);
+                console.log('TravelMap: 高德瓦片加载失败，切换到 OpenStreetMap');
+            }
+        });
+
+        gaodeLayer.addTo(this.map);
     }
 
     renderTripList() {
