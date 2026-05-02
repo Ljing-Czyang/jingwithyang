@@ -26,8 +26,8 @@ class StorageManager {
 
     initSupabase() {
         try {
-            if (CONFIG.supabase.url !== 'YOUR_SUPABASE_URL' && CONFIG.supabase.anonKey !== 'YOUR_SUPABASE_ANON_KEY') {
-                this.supabase = window.supabase.createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
+            this.supabase = getSupabaseClient();
+            if (this.supabase) {
                 this.initialized = true;
             } else {
                 console.warn('Supabase 未配置，使用本地存储作为后备方案');

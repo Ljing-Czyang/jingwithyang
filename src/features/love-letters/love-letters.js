@@ -28,9 +28,7 @@ class LoveLetters {
 
     initSupabase() {
         try {
-            if (CONFIG.supabase.url !== 'YOUR_SUPABASE_URL' && CONFIG.supabase.anonKey !== 'YOUR_SUPABASE_ANON_KEY') {
-                this.supabase = window.supabase.createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
-            }
+            this.supabase = getSupabaseClient();
         } catch (error) {
             console.error('LoveLetters: 初始化 Supabase 失败:', error);
         }

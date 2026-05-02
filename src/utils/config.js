@@ -22,3 +22,11 @@ const CONFIG = {
         lettersTable: "letters"
     }
 };
+
+let _supabaseClient = null;
+function getSupabaseClient() {
+    if (!_supabaseClient && CONFIG.supabase.url !== 'YOUR_SUPABASE_URL' && CONFIG.supabase.anonKey !== 'YOUR_SUPABASE_ANON_KEY') {
+        _supabaseClient = window.supabase.createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
+    }
+    return _supabaseClient;
+}
