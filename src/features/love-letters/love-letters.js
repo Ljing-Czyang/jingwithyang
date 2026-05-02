@@ -176,6 +176,10 @@ class LoveLetters {
                             <label for="letterContent">正文</label>
                             <textarea id="letterContent" class="write-textarea" placeholder="写下你想说的话..."></textarea>
                         </div>
+                        <div class="write-form-group">
+                            <label for="letterSign">署名</label>
+                            <input type="text" id="letterSign" class="write-input" placeholder="如：正扬" />
+                        </div>
                         <button class="submit-letter-btn" id="submitLetterBtn">寄出这封信 💌</button>
                     </div>
                 </div>
@@ -253,6 +257,9 @@ class LoveLetters {
         if (titleInput) titleInput.value = '';
         if (contentInput) contentInput.value = '';
 
+        const signInput = document.getElementById('letterSign');
+        if (signInput) signInput.value = '';
+
         this.selectBook('jing');
     }
 
@@ -295,11 +302,21 @@ class LoveLetters {
         const titleMatch = htmlContent.match(/<h4[^>]*>([\s\S]*?)<\/h4>/i);
         const titleText = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : '';
         const bodyHtml = htmlContent.replace(/<h4[^>]*>[\s\S]*?<\/h4>\s*/i, '');
-        const plainText = bodyHtml.replace(/<p>/g, '\n').replace(/<\/p>/g, '').replace(/<[^>]+>/g, '');
+        const signMatch = bodyHtml.match(/<div class="letter-signature"[^>]*>([\s\S]*?)<\/div>\s*$/i);
+        let signText = '';
+        const cleanBodyHtml = signMatch ? bodyHtml.replace(/<div class="letter-signature"[^>]*>[\s\S]*?<\/div>\s*$/, '') : bodyHtml;
+        if (signMatch) {
+            const signNameMatch = signMatch[1].match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+            if (signNameMatch) signText = signNameMatch[1].replace(/<[^>]+>/g, '').trim();
+        }
+        const plainText = cleanBodyHtml.replace(/<p>/g, '\n').replace(/<\/p>/g, '').replace(/<[^>]+>/g, '');
 
         if (dateInput) dateInput.value = letter.date || '';
         if (titleInput) titleInput.value = titleText;
         if (contentInput) contentInput.value = plainText.trim();
+
+        const signInput = document.getElementById('letterSign');
+        if (signInput) signInput.value = signText;
 
         this.selectBook(this.currentBook.id);
     }
@@ -317,6 +334,7 @@ class LoveLetters {
         const date = document.getElementById('letterDate')?.value?.trim();
         const title = document.getElementById('letterTitle')?.value?.trim();
         const content = document.getElementById('letterContent')?.value?.trim();
+        const sign = document.getElementById('letterSign')?.value?.trim();
 
         if (!date) {
             alert('请填写日期');
@@ -335,7 +353,8 @@ class LoveLetters {
 
         const paragraphs = content.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('\n');
         const titleHtml = title ? `<h4 style="text-align:center; margin-bottom:20px; font-weight:600;">${title}</h4>\n` : '';
-        const htmlContent = `${titleHtml}${paragraphs}`;
+        const signHtml = sign ? `\n<div class="letter-signature"><p style="text-align:right;">${sign}</p><p style="text-align:right;color:#999;font-size:13px;">${date}</p></div>` : '';
+        const htmlContent = `${titleHtml}${paragraphs}${signHtml}`;
 
         if (this.supabase) {
             try {
@@ -461,15 +480,24 @@ class LoveLetters {
         const wrapper = document.getElementById('pagesWrapper');
         if (!wrapper || !this.currentBook) return;
 
-        wrapper.innerHTML = this.currentBook.letters.map((letter, index) => `
+        wrapper.innerHTML = this.currentBook.letters.map((letter, index) => {
+            const htmlContent = letter.content || '';
+            const signMatch = htmlContent.match(/<div class="letter-signature"[^>]*>([\s\S]*?)<\/div>\s*$/i);
+            let signHtml = '';
+            let displayContent = htmlContent;
+            if (signMatch) {
+                signHtml = signMatch[1];
+                displayContent = htmlContent.replace(/<div class="letter-signature"[^>]*>[\s\S]*?<\/div>\s*$/, '');
+            }
+            return `
             <div class="book-page" data-page-index="${index}" style="${index === 0 ? '' : 'display:none;'}">
                 <div class="book-page-content">
-                    <div class="letter-date">${letter.date}</div>
-                    <div class="letter-text">${letter.content}</div>
+                    <div class="letter-text">${displayContent}</div>
+                    ${signHtml ? `<div class="letter-signature">${signHtml}</div>` : `<div class="letter-date">${letter.date}</div>`}
                     <button class="edit-letter-btn" onclick="loveLetters.showEditView(${index})">✏️ 编辑</button>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
     }
 
     updateNavigation() {
