@@ -547,6 +547,25 @@
     margin-top: 4px;
 }
 
+.edit-letter-btn {
+    display: block;
+    width: fit-content;
+    margin: 20px auto 0;
+    padding: 8px 18px;
+    background: rgba(102, 126, 234, 0.15);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: 10px;
+    color: #667eea;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.edit-letter-btn:hover {
+    background: rgba(102, 126, 234, 0.25);
+    border-color: #667eea;
+}
+
 @media (max-width: 767px) {
     .write-letter-form {
         padding: 50px 16px 16px;
