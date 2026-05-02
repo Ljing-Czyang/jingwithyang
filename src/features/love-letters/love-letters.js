@@ -301,13 +301,19 @@ class LoveLetters {
 
         const titleMatch = htmlContent.match(/<h4[^>]*>([\s\S]*?)<\/h4>/i);
         const titleText = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : '';
-        const bodyHtml = htmlContent.replace(/<h4[^>]*>[\s\S]*?<\/h4>\s*/i, '');
+        let bodyHtml = htmlContent.replace(/<h4[^>]*>[\s\S]*?<\/h4>\s*/i, '');
         const signMatch = bodyHtml.match(/<div class="letter-signature"[^>]*>([\s\S]*?)<\/div>\s*$/i);
+        const inlineSignMatch = bodyHtml.match(/(<p\s+style="text-align:\s*right;?"[^>]*>[\s\S]*?<\/p>\s*<p\s+style="text-align:\s*right;?[^"]*color:\s*#999[^"]*"[^>]*>[\s\S]*?<\/p>)\s*$/i);
         let signText = '';
-        const cleanBodyHtml = signMatch ? bodyHtml.replace(/<div class="letter-signature"[^>]*>[\s\S]*?<\/div>\s*$/, '') : bodyHtml;
+        let cleanBodyHtml = bodyHtml;
         if (signMatch) {
+            cleanBodyHtml = bodyHtml.replace(/<div class="letter-signature"[^>]*>[\s\S]*?<\/div>\s*$/, '');
             const signNameMatch = signMatch[1].match(/<p[^>]*>([\s\S]*?)<\/p>/i);
             if (signNameMatch) signText = signNameMatch[1].replace(/<[^>]+>/g, '').trim();
+        } else if (inlineSignMatch) {
+            cleanBodyHtml = bodyHtml.replace(/(<p\s+style="text-align:\s*right;?"[^>]*>[\s\S]*?<\/p>\s*<p\s+style="text-align:\s*right;?[^"]*color:\s*#999[^"]*"[^>]*>[\s\S]*?<\/p>)\s*$/, '');
+            const namePMatch = inlineSignMatch[1].match(/<p\s+style="text-align:\s*right;?"[^>]*>([\s\S]*?)<\/p>/i);
+            if (namePMatch) signText = namePMatch[1].replace(/<[^>]+>/g, '').trim();
         }
         const plainText = cleanBodyHtml.replace(/<p>/g, '\n').replace(/<\/p>/g, '').replace(/<[^>]+>/g, '');
 
@@ -483,11 +489,15 @@ class LoveLetters {
         wrapper.innerHTML = this.currentBook.letters.map((letter, index) => {
             const htmlContent = letter.content || '';
             const signMatch = htmlContent.match(/<div class="letter-signature"[^>]*>([\s\S]*?)<\/div>\s*$/i);
+            const inlineSignMatch = htmlContent.match(/(<p\s+style="text-align:\s*right;?"[^>]*>[\s\S]*?<\/p>\s*<p\s+style="text-align:\s*right;?[^"]*color:\s*#999[^"]*"[^>]*>[\s\S]*?<\/p>)\s*$/i);
             let signHtml = '';
             let displayContent = htmlContent;
             if (signMatch) {
                 signHtml = signMatch[1];
                 displayContent = htmlContent.replace(/<div class="letter-signature"[^>]*>[\s\S]*?<\/div>\s*$/, '');
+            } else if (inlineSignMatch) {
+                signHtml = inlineSignMatch[1];
+                displayContent = htmlContent.replace(/(<p\s+style="text-align:\s*right;?"[^>]*>[\s\S]*?<\/p>\s*<p\s+style="text-align:\s*right;?[^"]*color:\s*#999[^"]*"[^>]*>[\s\S]*?<\/p>)\s*$/, '');
             }
             return `
             <div class="book-page" data-page-index="${index}" style="${index === 0 ? '' : 'display:none;'}">
