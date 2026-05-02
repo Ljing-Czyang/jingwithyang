@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Our Memory</title>
     <link rel="stylesheet" href="src/styles/main.css" id="main-stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="lib/leaflet.css" />
     <script>
         if (window.matchMedia && window.matchMedia('(max-width: 767px)').matches) {
             document.getElementById('main-stylesheet').onerror = function() {
@@ -135,8 +135,8 @@
     </div>
 
     <!-- JavaScript文件加载 -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="lib/supabase.js"></script>
+    <script src="lib/leaflet.js"></script>
     <script src="src/utils/config.js"></script>
     <script src="src/utils/dom.js"></script>
     <script src="src/utils/helpers.js"></script>
