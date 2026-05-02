@@ -260,6 +260,12 @@ class LoveLetters {
         if (!this.currentBook || !this.currentBook.letters[pageIndex]) return;
 
         const letter = this.currentBook.letters[pageIndex];
+
+        if (!letter.id) {
+            alert('这封信没有唯一标识，无法编辑（可能是本地数据）');
+            return;
+        }
+
         this.editingLetterId = letter.id;
 
         const readingView = document.getElementById('bookReadingView');
@@ -368,6 +374,13 @@ class LoveLetters {
                 this.lettersData = null;
                 localStorage.removeItem('loveLetters_cache');
                 await this.loadLettersData(true);
+
+                if (this.currentBook) {
+                    const updatedBook = this.lettersData.books.find(b => b.id === this.currentBook.id);
+                    if (updatedBook) {
+                        this.currentBook = updatedBook;
+                    }
+                }
 
                 if (submitBtn) {
                     submitBtn.textContent = '✅ 保存成功！';
