@@ -28,7 +28,13 @@ function getSupabaseClient() {
     if (!_supabaseClient && CONFIG.supabase.url !== 'YOUR_SUPABASE_URL' && CONFIG.supabase.anonKey !== 'YOUR_SUPABASE_ANON_KEY') {
         const sb = typeof supabase !== 'undefined' ? supabase : (window.supabase || {});
         if (sb.createClient) {
-            _supabaseClient = sb.createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
+            _supabaseClient = sb.createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey, {
+                auth: {
+                    persistSession: false,
+                    detectSessionInUrl: false,
+                    autoRefreshToken: false
+                }
+            });
         }
     }
     return _supabaseClient;
