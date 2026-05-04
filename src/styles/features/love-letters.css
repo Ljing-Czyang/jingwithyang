@@ -430,17 +430,17 @@
     color: #667eea;
     margin: 0 0 20px;
     font-size: 18px;
+    flex-shrink: 0;
 }
 
 .write-form-group {
     margin-bottom: 16px;
+    flex-shrink: 0;
 }
 
 .write-form-group.flex-1 {
-    flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 0;
 }
 
 .write-form-group label {
@@ -475,7 +475,6 @@
 
 .write-textarea {
     width: 100%;
-    flex: 1;
     padding: 12px 14px;
     border: 2px solid #e0e0e0;
     border-radius: 10px;
@@ -488,6 +487,8 @@
     transition: border-color 0.3s ease;
     font-family: inherit;
     min-height: 150px;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 .write-textarea:focus {
@@ -539,6 +540,7 @@
     transition: all 0.3s ease;
     margin-top: 12px;
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    flex-shrink: 0;
 }
 
 .submit-letter-btn:hover:not(:disabled) {
@@ -583,5 +585,7 @@
 
     .write-textarea {
         min-height: 120px;
+        max-height: 220px;
+        overflow-y: auto;
     }
 }
