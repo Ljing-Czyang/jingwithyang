@@ -16,7 +16,7 @@ class LoveLetters {
     }
 
     prefetch() {
-        const cached = this.loadCachedData();
+        const cached = CacheManager.load('loveLetters_cache');
         if (cached) {
             this.lettersData = cached;
         }
@@ -35,33 +35,11 @@ class LoveLetters {
         }
     }
 
-    loadCachedData() {
-        try {
-            const cached = localStorage.getItem('loveLetters_cache');
-            if (cached) {
-                const { data, timestamp } = JSON.parse(cached);
-                if (Date.now() - timestamp < 5 * 60 * 1000) {
-                    return data;
-                }
-            }
-        } catch (e) {}
-        return null;
-    }
-
-    saveCachedData(data) {
-        try {
-            localStorage.setItem('loveLetters_cache', JSON.stringify({
-                data: data,
-                timestamp: Date.now()
-            }));
-        } catch (e) {}
-    }
-
     async loadLettersData(forceRefresh) {
         if (this.lettersData && !forceRefresh) return this.lettersData;
 
         if (!forceRefresh) {
-            const cached = this.loadCachedData();
+            const cached = CacheManager.load('loveLetters_cache');
             if (cached) {
                 this.lettersData = cached;
                 return this.lettersData;
@@ -102,7 +80,7 @@ class LoveLetters {
                     }))
                 };
 
-                this.saveCachedData(this.lettersData);
+                CacheManager.save('loveLetters_cache', this.lettersData);
                 console.log('LoveLetters: 从 Supabase 加载信件成功');
                 return this.lettersData;
             } catch (error) {
@@ -119,7 +97,7 @@ class LoveLetters {
             this.close();
         }
 
-        this.lettersData = this.lettersData || this.loadCachedData() || LETTERS_DATA || { books: [] };
+        this.lettersData = this.lettersData || CacheManager.load('loveLetters_cache') || LETTERS_DATA || { books: [] };
         this.editingLetterId = null;
 
         this.modal = document.createElement('div');
@@ -353,14 +331,6 @@ class LoveLetters {
         this.selectBook(this.currentBook.id);
     }
 
-    parseHtmlToPlain(htmlContent) {
-        let titleMatch = htmlContent.match(/<h4[^>]*>([\s\S]*?)<\/h4>/i);
-        const titleText = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : '';
-        const bodyHtml = htmlContent.replace(/<h4[^>]*>[\s\S]*?<\/h4>\s*/i, '');
-        const plainText = bodyHtml.replace(/<p>/g, '\n').replace(/<\/p>/g, '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '');
-        return { title: titleText, content: plainText.trim() };
-    }
-
     formatDateToChinese(dateStr) {
         const match = dateStr.match(/(\d{4})\.(\d{1,2})\.(\d{1,2})/);
         if (match) {
@@ -441,7 +411,7 @@ class LoveLetters {
                 }
 
                 this.lettersData = null;
-                localStorage.removeItem('loveLetters_cache');
+                CacheManager.remove('loveLetters_cache');
                 await this.loadLettersData(true);
 
                 if (this.currentBook) {

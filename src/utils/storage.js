@@ -73,12 +73,7 @@ class StorageManager {
         ImageUtils.validateFile(file);
 
         const photoId = `photo_${Date.now()}`;
-        const uploaderInfo = {
-            jing: { id: 'user_001', name: '境', avatar: '💚' },
-            yang: { id: 'user_002', name: '扬', avatar: '💙' }
-        };
-
-        const info = uploaderInfo[uploader] || uploaderInfo.jing;
+        const info = CONFIG.users[uploader] || CONFIG.users.jing;
 
         if (this.isUsingSupabase()) {
             const fileName = file.name || 'image.jpg';

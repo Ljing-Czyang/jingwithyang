@@ -4,21 +4,6 @@ class AlbumFeature {
         this.photos = [];
     }
 
-    renderLoadingView() {
-        return `
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 20px;">
-                <div style="width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid #ff6b6b; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                <p style="color: #888; margin-top: 20px; font-size: 16px;">加载中...</p>
-            </div>
-            <style>
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-            </style>
-        `;
-    }
-
     async show() {
         const container = document.getElementById('view-album');
         if (container) {
@@ -28,7 +13,7 @@ class AlbumFeature {
                         <h3>📷 我们的相册</h3>
                     </div>
                     <div class="album-content">
-                        ${this.renderLoadingView()}
+                        ${UIUtils.getLoadingView()}
                     </div>
                 </div>
             `;

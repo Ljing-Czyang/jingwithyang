@@ -1,6 +1,7 @@
 class HomeFeature {
     constructor() {
         this.charIndex = 0;
+        this.typewriterTimer = null;
     }
 
     startTimer() {
@@ -25,8 +26,17 @@ class HomeFeature {
     }
 
     startTypewriter() {
+        this.stopTypewriter();
+
         const text = CONFIG.loveLetter;
-        if (this.charIndex < text.length) {
+        const type = () => {
+            if (this.charIndex >= text.length) return;
+
+            if (!els.typewriter || !document.body.contains(els.typewriter)) {
+                this.stopTypewriter();
+                return;
+            }
+
             if (text.substring(this.charIndex).startsWith('<br>')) {
                 els.typewriter.innerHTML += '<br>';
                 this.charIndex += 4;
@@ -34,7 +44,15 @@ class HomeFeature {
                 els.typewriter.innerHTML += text.charAt(this.charIndex);
                 this.charIndex++;
             }
-            setTimeout(() => this.startTypewriter(), 100);
+            this.typewriterTimer = setTimeout(type, 100);
+        };
+        type();
+    }
+
+    stopTypewriter() {
+        if (this.typewriterTimer) {
+            clearTimeout(this.typewriterTimer);
+            this.typewriterTimer = null;
         }
     }
 

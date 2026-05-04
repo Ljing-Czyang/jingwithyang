@@ -66,7 +66,7 @@ class ImageUtils {
 
     static validateFile(file) {
         const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-        const maxSize = 5 * 1024 * 1024;
+        const maxSize = CONFIG.maxPhotoSize;
 
         if (!allowedTypes.includes(file.type)) {
             throw new Error('只支持 JPG、PNG、WebP 格式');

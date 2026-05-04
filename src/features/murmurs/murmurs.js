@@ -16,7 +16,7 @@ class Murmurs {
     }
 
     prefetch() {
-        const cached = this.loadCachedData();
+        const cached = CacheManager.load('murmurs_cache');
         if (cached) {
             this.murmursData = cached;
         }
@@ -25,33 +25,13 @@ class Murmurs {
         }
     }
 
-    loadCachedData() {
-        try {
-            const cached = localStorage.getItem('murmurs_cache');
-            if (cached) {
-                const { data, timestamp } = JSON.parse(cached);
-                if (Date.now() - timestamp < 5 * 60 * 1000) {
-                    return data;
-                }
-            }
-        } catch (e) {}
-        return null;
-    }
 
-    saveCachedData(data) {
-        try {
-            localStorage.setItem('murmurs_cache', JSON.stringify({
-                data: data,
-                timestamp: Date.now()
-            }));
-        } catch (e) {}
-    }
 
     async loadMurmursData(forceRefresh) {
         if (this.murmursData.length > 0 && !forceRefresh) return this.murmursData;
 
         if (!forceRefresh) {
-            const cached = this.loadCachedData();
+            const cached = CacheManager.load('murmurs_cache');
             if (cached) {
                 this.murmursData = cached;
                 return this.murmursData;
@@ -75,7 +55,7 @@ class Murmurs {
                     createdAt: m.created_at
                 }));
 
-                this.saveCachedData(this.murmursData);
+                CacheManager.save('murmurs_cache', this.murmursData);
                 console.log('Murmurs: 从 Supabase 加载成功');
                 return this.murmursData;
             } catch (error) {
@@ -192,7 +172,7 @@ class Murmurs {
 
                 if (error) throw error;
 
-                localStorage.removeItem('murmurs_cache');
+                CacheManager.remove('murmurs_cache');
                 await this.loadMurmursData(true);
                 this.renderTimeline();
 
@@ -237,7 +217,7 @@ class Murmurs {
 
                 if (error) throw error;
 
-                localStorage.removeItem('murmurs_cache');
+                CacheManager.remove('murmurs_cache');
                 await this.loadMurmursData(true);
                 this.renderTimeline();
             } catch (error) {

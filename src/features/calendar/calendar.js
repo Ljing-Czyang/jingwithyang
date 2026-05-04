@@ -12,28 +12,13 @@ class CoupleCalendar {
         return new Set(photos.filter(photo => photo.date).map(photo => photo.date));
     }
 
-    renderLoadingView() {
-        return `
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px;">
-                <div style="width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid #ff6b6b; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                <p style="color: #888; margin-top: 16px;">加载中...</p>
-            </div>
-            <style>
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-            </style>
-        `;
-    }
-
     async renderCalendarView() {
         const container = document.getElementById('calendar-container');
         if (!container) return;
         
         container.innerHTML = `
             <h3>📅 我们的日历</h3>
-            ${this.renderLoadingView()}
+            ${UIUtils.getLoadingView()}
         `;
         
         try {
@@ -65,7 +50,7 @@ class CoupleCalendar {
                     <h3>📅 我们的日历</h3>
                     <button onclick="this.closest('.calendar-modal').remove()">✕</button>
                 </div>
-                ${this.renderLoadingView()}
+                ${UIUtils.getLoadingView()}
             </div>
         `;
         
