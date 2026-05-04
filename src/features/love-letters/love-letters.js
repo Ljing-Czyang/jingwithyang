@@ -10,6 +10,7 @@ class LoveLetters {
         this.lettersData = null;
         this.supabase = null;
         this.editingLetterId = null;
+        this.editedPageIndex = 0;
         this.initSupabase();
         this.prefetch();
     }
@@ -274,6 +275,7 @@ class LoveLetters {
         }
 
         this.editingLetterId = letter.id;
+        this.editedPageIndex = pageIndex;
 
         const readingView = document.getElementById('bookReadingView');
         const writeView = document.getElementById('writeLetterView');
@@ -368,6 +370,7 @@ class LoveLetters {
                     const { error: updateError } = await this.supabase
                         .from(CONFIG.supabase.lettersTable)
                         .update({
+                            book_id: bookId,
                             date: date,
                             content: htmlContent
                         })
@@ -413,14 +416,15 @@ class LoveLetters {
                 }
 
                 setTimeout(() => {
-                    if (this.editingLetterId) {
+                    const wasEditing = !!this.editingLetterId;
+                    if (wasEditing) {
                         this.goToReadView();
                     } else {
                         this.goToBookSelection();
                     }
                     if (submitBtn) {
                         submitBtn.disabled = false;
-                        submitBtn.textContent = this.editingLetterId ? '保存修改 💾' : '寄出这封信 💌';
+                        submitBtn.textContent = wasEditing ? '保存修改 💾' : '寄出这封信 💌';
                         submitBtn.style.background = '';
                     }
                     this.editingLetterId = null;
@@ -452,6 +456,7 @@ class LoveLetters {
         if (readingView) readingView.classList.add('active');
         if (writeView) writeView.classList.remove('active');
 
+        this.currentPageIndex = this.editedPageIndex;
         this.renderPages();
         this.updateNavigation();
 
@@ -500,7 +505,7 @@ class LoveLetters {
                 displayContent = htmlContent.replace(/(<p\s+style="text-align:\s*right;?"[^>]*>[\s\S]*?<\/p>\s*<p\s+style="text-align:\s*right;?[^"]*color:\s*#999[^"]*"[^>]*>[\s\S]*?<\/p>)\s*$/, '');
             }
             return `
-            <div class="book-page" data-page-index="${index}" style="${index === 0 ? '' : 'display:none;'}">
+            <div class="book-page" data-page-index="${index}" style="${index === this.currentPageIndex ? '' : 'display:none;'}">
                 <div class="book-page-content">
                     <div class="letter-text">${displayContent}</div>
                     ${signHtml ? `<div class="letter-signature">${signHtml}</div>` : `<div class="letter-date">${letter.date}</div>`}
