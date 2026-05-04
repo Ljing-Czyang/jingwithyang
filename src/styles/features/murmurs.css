@@ -1,0 +1,337 @@
+.murmurs-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.murmurs-container {
+    width: 90%;
+    max-width: 420px;
+    height: 85vh;
+    background: #f8f9fa;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+}
+
+.murmurs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    flex-shrink: 0;
+}
+
+.murmurs-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.murmurs-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.murmurs-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.murmurs-input-area {
+    padding: 14px 16px;
+    background: white;
+    border-bottom: 1px solid #eee;
+    flex-shrink: 0;
+}
+
+.murmurs-author-select {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.murmurs-author-item {
+    padding: 5px 14px;
+    border-radius: 16px;
+    font-size: 13px;
+    cursor: pointer;
+    background: #f0f0f0;
+    color: #666;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.murmurs-author-item.selected {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.murmurs-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.murmurs-mood-select {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    border-radius: 50%;
+    background: #f5f5f5;
+    transition: background 0.2s;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.murmurs-mood-select:hover {
+    background: #e8e8e8;
+}
+
+.murmur-input {
+    flex: 1;
+    padding: 8px 14px;
+    border: 2px solid #e0e0e0;
+    border-radius: 20px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+    background: #fafafa;
+}
+
+.murmur-input:focus {
+    border-color: #667eea;
+    background: white;
+}
+
+.murmur-send-btn {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.murmur-send-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+}
+
+.murmur-send-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.murmurs-mood-picker {
+    display: none;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 8px 0 0;
+}
+
+.murmurs-mood-picker.active {
+    display: flex;
+}
+
+.mood-option {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.2s;
+    user-select: none;
+}
+
+.mood-option:hover {
+    background: #f0f0f0;
+}
+
+.murmurs-timeline {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.murmurs-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+}
+
+.murmurs-empty-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.murmurs-empty p {
+    margin: 4px 0;
+    font-size: 15px;
+}
+
+.murmurs-empty-hint {
+    font-size: 13px !important;
+    color: #bbb;
+}
+
+.murmur-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 14px;
+    position: relative;
+    animation: murmurSlideIn 0.3s ease-out;
+}
+
+@keyframes murmurSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.murmur-item.murmur-yang {
+    flex-direction: row-reverse;
+}
+
+.murmur-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.murmur-bubble {
+    max-width: 70%;
+    padding: 10px 14px;
+    border-radius: 16px;
+    position: relative;
+}
+
+.murmur-jing .murmur-bubble {
+    background: linear-gradient(135deg, #667eea15, #764ba215);
+    border: 1px solid #667eea30;
+    border-top-left-radius: 4px;
+}
+
+.murmur-yang .murmur-bubble {
+    background: linear-gradient(135deg, #2a4e9b15, #1a3a7a15);
+    border: 1px solid #2a4e9b30;
+    border-top-right-radius: 4px;
+}
+
+.murmur-bubble-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.murmur-author-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+}
+
+.murmur-mood {
+    font-size: 14px;
+}
+
+.murmur-time {
+    font-size: 11px;
+    color: #aaa;
+    margin-left: auto;
+}
+
+.murmur-content {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+    word-break: break-word;
+}
+
+.murmur-delete-btn {
+    position: absolute;
+    top: 2px;
+    right: -4px;
+    background: none;
+    border: none;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+    padding: 2px 4px;
+}
+
+.murmur-yang .murmur-delete-btn {
+    right: auto;
+    left: -4px;
+}
+
+.murmur-item:hover .murmur-delete-btn {
+    opacity: 0.5;
+}
+
+.murmur-delete-btn:hover {
+    opacity: 1 !important;
+}
+
+@media (max-width: 767px) {
+    .murmurs-container {
+        width: 95%;
+        height: 90vh;
+        border-radius: 16px;
+    }
+
+    .murmur-bubble {
+        max-width: 75%;
+    }
+
+    .murmur-delete-btn {
+        opacity: 0.3;
+    }
+}

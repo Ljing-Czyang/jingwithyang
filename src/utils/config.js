@@ -19,7 +19,8 @@ const CONFIG = {
         storageBucket: "photos",
         tableName: "photos",
         letterBooksTable: "letter_books",
-        lettersTable: "letters"
+        lettersTable: "letters",
+        murmursTable: "murmurs"
     }
 };
 
