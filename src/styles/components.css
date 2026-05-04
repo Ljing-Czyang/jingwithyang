@@ -58,7 +58,7 @@
     padding: 25px;
     width: 90%;
     max-width: 400px;
-    max-height: 80vh;
+    max-height: calc(100dvh - 32px);
     overflow-y: auto;
     animation: slideUp 0.3s;
     -webkit-transform: translateZ(0);
@@ -153,7 +153,7 @@
     .modal-content-base {
         width: 95%;
         padding: 20px;
-        max-height: 75vh;
+        max-height: calc(100dvh - 48px);
         border-radius: 15px;
     }
     

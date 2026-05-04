@@ -139,7 +139,7 @@
     padding: 25px;
     width: 90%;
     max-width: 450px;
-    max-height: 85vh;
+    max-height: calc(100dvh - 24px);
     overflow-y: auto;
     animation: slideUp 0.3s;
 }
@@ -246,7 +246,7 @@
     padding: 25px;
     width: 90%;
     max-width: 380px;
-    max-height: 85vh;
+    max-height: calc(100dvh - 24px);
     overflow-y: auto;
     animation: slideUp 0.3s;
 }
@@ -299,7 +299,7 @@
     .photo-detail-content {
         width: 95%;
         padding: 20px;
-        max-height: 80vh;
+        max-height: calc(100dvh - 40px);
     }
     
     .upload-content {

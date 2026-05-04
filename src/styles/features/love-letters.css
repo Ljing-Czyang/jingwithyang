@@ -20,7 +20,7 @@
 .love-letters-container {
     width: 90%;
     max-width: 400px;
-    height: 85vh;
+    max-height: calc(100dvh - 32px);
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 20px;
     overflow: hidden;
@@ -350,9 +350,9 @@
 
 @media (max-width: 767px) {
     .love-letters-container {
-        width: 95%;
-        height: 90vh;
-        border-radius: 15px;
+        width: 96%;
+        max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 16px);
+        border-radius: 14px;
     }
 
     .book-page {
