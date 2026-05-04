@@ -181,6 +181,10 @@ class LoveLetters {
                             <label for="letterSign">署名</label>
                             <input type="text" id="letterSign" class="write-input" placeholder="如：正扬" />
                         </div>
+                        <div class="write-form-group">
+                            <label for="letterLocation">地点 <span class="optional">(可选)</span></label>
+                            <input type="text" id="letterLocation" class="write-input" placeholder="如：华师附小" />
+                        </div>
                         <button class="submit-letter-btn" id="submitLetterBtn">寄出这封信 💌</button>
                     </div>
                 </div>
@@ -261,7 +265,10 @@ class LoveLetters {
         const signInput = document.getElementById('letterSign');
         if (signInput) signInput.value = '';
 
-        this.selectBook('jing');
+        const locationInput = document.getElementById('letterLocation');
+        if (locationInput) locationInput.value = '';
+
+        this.renderBookSelectItems();
     }
 
     showEditView(pageIndex) {
@@ -304,18 +311,32 @@ class LoveLetters {
         const titleMatch = htmlContent.match(/<h4[^>]*>([\s\S]*?)<\/h4>/i);
         const titleText = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : '';
         let bodyHtml = htmlContent.replace(/<h4[^>]*>[\s\S]*?<\/h4>\s*/i, '');
-        const signMatch = bodyHtml.match(/<div class="letter-signature"[^>]*>([\s\S]*?)<\/div>\s*$/i);
+
+        const divSignMatch = bodyHtml.match(/<div class="letter-signature"[^>]*>([\s\S]*?)<\/div>\s*$/i);
         const inlineSignMatch = bodyHtml.match(/(<p\s+style="text-align:\s*right;?"[^>]*>[\s\S]*?<\/p>\s*<p\s+style="text-align:\s*right;?[^"]*color:\s*#999[^"]*"[^>]*>[\s\S]*?<\/p>)\s*$/i);
+
         let signText = '';
+        let locationText = '';
         let cleanBodyHtml = bodyHtml;
-        if (signMatch) {
+
+        if (divSignMatch) {
             cleanBodyHtml = bodyHtml.replace(/<div class="letter-signature"[^>]*>[\s\S]*?<\/div>\s*$/, '');
-            const signNameMatch = signMatch[1].match(/<p[^>]*>([\s\S]*?)<\/p>/i);
-            if (signNameMatch) signText = signNameMatch[1].replace(/<[^>]+>/g, '').trim();
+            const ps = divSignMatch[1].match(/<p[^>]*>([\s\S]*?)<\/p>/gi);
+            if (ps && ps[0]) signText = ps[0].replace(/<[^>]+>/g, '').trim();
+            if (ps && ps[1]) {
+                const dateLocText = ps[1].replace(/<[^>]+>/g, '').trim();
+                const parts = dateLocText.split('·');
+                if (parts.length > 1) locationText = parts.slice(1).join('·').trim();
+            }
         } else if (inlineSignMatch) {
             cleanBodyHtml = bodyHtml.replace(/(<p\s+style="text-align:\s*right;?"[^>]*>[\s\S]*?<\/p>\s*<p\s+style="text-align:\s*right;?[^"]*color:\s*#999[^"]*"[^>]*>[\s\S]*?<\/p>)\s*$/, '');
-            const namePMatch = inlineSignMatch[1].match(/<p\s+style="text-align:\s*right;?"[^>]*>([\s\S]*?)<\/p>/i);
-            if (namePMatch) signText = namePMatch[1].replace(/<[^>]+>/g, '').trim();
+            const ps = inlineSignMatch[1].match(/<p[^>]*>([\s\S]*?)<\/p>/gi);
+            if (ps && ps[0]) signText = ps[0].replace(/<[^>]+>/g, '').trim();
+            if (ps && ps[1]) {
+                const dateLocText = ps[1].replace(/<[^>]+>/g, '').trim();
+                const parts = dateLocText.split('·');
+                if (parts.length > 1) locationText = parts.slice(1).join('·').trim();
+            }
         }
         const plainText = cleanBodyHtml.replace(/<p>/g, '\n').replace(/<\/p>/g, '').replace(/<[^>]+>/g, '');
 
@@ -325,6 +346,9 @@ class LoveLetters {
 
         const signInput = document.getElementById('letterSign');
         if (signInput) signInput.value = signText;
+
+        const locationInput = document.getElementById('letterLocation');
+        if (locationInput) locationInput.value = locationText;
 
         this.selectBook(this.currentBook.id);
     }
@@ -337,12 +361,21 @@ class LoveLetters {
         return { title: titleText, content: plainText.trim() };
     }
 
+    formatDateToChinese(dateStr) {
+        const match = dateStr.match(/(\d{4})\.(\d{1,2})\.(\d{1,2})/);
+        if (match) {
+            return `${match[1]}年${parseInt(match[2])}月${parseInt(match[3])}日`;
+        }
+        return dateStr;
+    }
+
     async submitLetter() {
-        const bookId = document.querySelector('.book-select-item.selected')?.dataset.bookId || 'jing';
+        const bookId = document.querySelector('.book-select-item.selected')?.dataset.bookId || this.currentBook?.id || 'jing';
         const date = document.getElementById('letterDate')?.value?.trim();
         const title = document.getElementById('letterTitle')?.value?.trim();
         const content = document.getElementById('letterContent')?.value?.trim();
         const sign = document.getElementById('letterSign')?.value?.trim();
+        const location = document.getElementById('letterLocation')?.value?.trim();
 
         if (!date) {
             alert('请填写日期');
@@ -361,22 +394,30 @@ class LoveLetters {
 
         const paragraphs = content.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('\n');
         const titleHtml = title ? `<h4 style="text-align:center; margin-bottom:20px; font-weight:600;">${title}</h4>\n` : '';
-        const signHtml = sign ? `\n<div class="letter-signature"><p style="text-align:right;">${sign}</p><p style="text-align:right;color:#999;font-size:13px;">${date}</p></div>` : '';
+        let signHtml = '';
+        if (sign) {
+            const chineseDate = this.formatDateToChinese(date);
+            const locationPart = location ? ` · ${location}` : '';
+            signHtml = `\n<p style="text-align: right;">${sign}</p>\n<p style="text-align: right; color: #999; font-size: 13px;">${chineseDate}${locationPart}</p>`;
+        }
         const htmlContent = `${titleHtml}${paragraphs}${signHtml}`;
 
         if (this.supabase) {
             try {
                 if (this.editingLetterId) {
-                    const { error: updateError } = await this.supabase
+                    console.log('LoveLetters: 更新信件', { id: this.editingLetterId, book_id: bookId, date: date });
+                    const { data: updateData, error: updateError } = await this.supabase
                         .from(CONFIG.supabase.lettersTable)
                         .update({
                             book_id: bookId,
                             date: date,
                             content: htmlContent
                         })
-                        .eq('id', this.editingLetterId);
+                        .eq('id', this.editingLetterId)
+                        .select();
 
                     if (updateError) throw updateError;
+                    console.log('LoveLetters: 更新结果', updateData);
                 } else {
                     const { data: existingLetters, error: countError } = await this.supabase
                         .from(CONFIG.supabase.lettersTable)
@@ -493,12 +534,12 @@ class LoveLetters {
 
         wrapper.innerHTML = this.currentBook.letters.map((letter, index) => {
             const htmlContent = letter.content || '';
-            const signMatch = htmlContent.match(/<div class="letter-signature"[^>]*>([\s\S]*?)<\/div>\s*$/i);
+            const divSignMatch = htmlContent.match(/<div class="letter-signature"[^>]*>([\s\S]*?)<\/div>\s*$/i);
             const inlineSignMatch = htmlContent.match(/(<p\s+style="text-align:\s*right;?"[^>]*>[\s\S]*?<\/p>\s*<p\s+style="text-align:\s*right;?[^"]*color:\s*#999[^"]*"[^>]*>[\s\S]*?<\/p>)\s*$/i);
             let signHtml = '';
             let displayContent = htmlContent;
-            if (signMatch) {
-                signHtml = signMatch[1];
+            if (divSignMatch) {
+                signHtml = divSignMatch[1];
                 displayContent = htmlContent.replace(/<div class="letter-signature"[^>]*>[\s\S]*?<\/div>\s*$/, '');
             } else if (inlineSignMatch) {
                 signHtml = inlineSignMatch[1];
