@@ -15,6 +15,7 @@
 .murmurs-container {
     width: 90%;
     max-width: 420px;
+    max-height: calc(100vh - 32px);
     max-height: calc(100dvh - 32px);
     background: #f8f9fa;
     border-radius: 20px;
@@ -323,6 +324,7 @@
 @media (max-width: 767px) {
     .murmurs-container {
         width: 96%;
+        max-height: calc(100vh - 16px);
         max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 16px);
         border-radius: 14px;
         top: 8px;

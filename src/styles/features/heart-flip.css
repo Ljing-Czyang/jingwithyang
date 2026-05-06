@@ -19,6 +19,7 @@
     padding: 25px;
     width: 90%;
     max-width: 400px;
+    max-height: calc(100vh - 24px);
     max-height: calc(100dvh - 24px);
     overflow-y: auto;
     animation: slideUp 0.3s;
