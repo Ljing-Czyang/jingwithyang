@@ -2,6 +2,7 @@ class CoupleCalendar {
     constructor() {
         this.currentDate = new Date();
         this.cachedPhotos = [];
+        this.cachedMurmurs = [];
     }
 
     clearTransientModals() {
@@ -10,6 +11,32 @@ class CoupleCalendar {
 
     getPhotoDateSet(photos = []) {
         return new Set(photos.filter(photo => photo.date).map(photo => photo.date));
+    }
+
+    getMurmurDateSet(murmurs = []) {
+        return new Set(murmurs.filter(m => m.createdAt).map(m => {
+            const d = new Date(m.createdAt);
+            return formatDate(d);
+        }));
+    }
+
+    getMurmursByDate(dateStr, murmurs = []) {
+        return murmurs.filter(m => {
+            const d = new Date(m.createdAt);
+            return formatDate(d) === dateStr;
+        });
+    }
+
+    async loadMurmursData() {
+        if (typeof murmurs !== 'undefined' && murmurs.loadMurmursData) {
+            try {
+                this.cachedMurmurs = await murmurs.loadMurmursData(false);
+            } catch (e) {
+                console.error('日历加载碎碎念数据失败:', e);
+                this.cachedMurmurs = [];
+            }
+        }
+        return this.cachedMurmurs;
     }
 
     async renderCalendarView() {
@@ -24,9 +51,10 @@ class CoupleCalendar {
         try {
             const allPhotos = await storage.getPhotos();
             this.cachedPhotos = allPhotos;
+            await this.loadMurmursData();
             container.innerHTML = `
                 <h3>📅 我们的日历</h3>
-                ${this.render(allPhotos)}
+                ${this.render(allPhotos, this.cachedMurmurs)}
                 <div class="calendar-events">
                     <h4>📌 重要日期</h4>
                     ${this.renderSpecialDates()}
@@ -59,6 +87,7 @@ class CoupleCalendar {
         try {
             const allPhotos = await storage.getPhotos();
             this.cachedPhotos = allPhotos;
+            await this.loadMurmursData();
             const calendarContent = modal.querySelector('.calendar-modal-content');
             if (calendarContent) {
                 calendarContent.innerHTML = `
@@ -66,7 +95,7 @@ class CoupleCalendar {
                         <h3>📅 我们的日历</h3>
                         <button onclick="this.closest('.calendar-modal').remove()">✕</button>
                     </div>
-                    ${this.render(allPhotos)}
+                    ${this.render(allPhotos, this.cachedMurmurs)}
                     <div class="calendar-events">
                         <h4>📌 重要日期</h4>
                         ${this.renderSpecialDates()}
@@ -88,7 +117,7 @@ class CoupleCalendar {
         }
     }
 
-    render(photos = []) {
+    render(photos = [], murmurs = []) {
         const year = this.currentDate.getFullYear();
         const month = this.currentDate.getMonth();
         
@@ -97,6 +126,7 @@ class CoupleCalendar {
         const daysInMonth = lastDay.getDate();
         const startDayOfWeek = firstDay.getDay();
         const photoDateSet = this.getPhotoDateSet(photos);
+        const murmurDateSet = this.getMurmurDateSet(murmurs);
         
         let html = `
             <div class="calendar-header">
@@ -126,16 +156,22 @@ class CoupleCalendar {
             const isSpecial = this.isSpecialDate(dateStr);
             const isAnniversary = day === CONFIG.monthlyAnniversary;
             const hasPhotos = photoDateSet.has(dateStr);
+            const hasMurmurs = murmurDateSet.has(dateStr);
             
             let classes = 'calendar-day';
             if (isToday) classes += ' today';
             if (isSpecial) classes += ' special';
             if (isAnniversary) classes += ' anniversary';
             if (hasPhotos) classes += ' has-photos';
+            if (hasMurmurs) classes += ' has-murmurs';
+            
+            let indicators = '';
+            if (hasPhotos) indicators += '<div class="photo-indicator"></div>';
+            if (hasMurmurs) indicators += '<div class="murmur-indicator"></div>';
             
             html += `<div class="${classes}" onclick="calendar.showDateDetails('${dateStr}')">
                 ${day}
-                ${hasPhotos ? '<div class="photo-indicator"></div>' : ''}
+                <div class="calendar-day-indicators">${indicators}</div>
             </div>`;
         }
         
@@ -152,9 +188,10 @@ class CoupleCalendar {
     async updateCalendar() {
         const calendarContent = document.querySelector('.calendar-modal-content');
         const photosToUse = this.cachedPhotos.length > 0 ? this.cachedPhotos : await storage.getPhotos();
+        await this.loadMurmursData();
         
         if (calendarContent) {
-            const newCalendar = this.render(photosToUse);
+            const newCalendar = this.render(photosToUse, this.cachedMurmurs);
             calendarContent.innerHTML = `
                 <div class="calendar-modal-header">
                     <h3>📅 我们的时光</h3>
@@ -193,6 +230,8 @@ class CoupleCalendar {
         const specialDate = CONFIG.specialDates.find(d => d.date === dateStr);
         const event = CONFIG.events.find(e => e.date === dateStr);
         const photos = await storage.getPhotosByDate(dateStr);
+        await this.loadMurmursData();
+        const dateMurmurs = this.getMurmursByDate(dateStr, this.cachedMurmurs);
         
         const startDate = new Date(CONFIG.startDate);
         const currentDate = new Date(dateStr);
@@ -235,14 +274,39 @@ class CoupleCalendar {
             `;
         }
         
-        if (!specialDate && !event && days <= 0) {
+        if (!specialDate && !event && days <= 0 && dateMurmurs.length === 0) {
             html += `<div class="date-detail-empty">暂无记录</div>`;
+        }
+
+        if (dateMurmurs.length > 0) {
+            html += `
+                <div class="date-murmurs-section">
+                    <div class="date-murmurs-title">💭 碎碎念</div>
+                    <div class="date-murmurs-list">
+            `;
+            dateMurmurs.forEach(m => {
+                const isJing = m.author === '境';
+                html += `
+                    <div class="date-murmur-item ${isJing ? 'murmur-jing' : 'murmur-yang'}">
+                        <span class="date-murmur-avatar">${isJing ? '🌿' : '🌙'}</span>
+                        <div class="date-murmur-content">
+                            <span class="date-murmur-mood">${m.mood || '💭'}</span>
+                            <span class="date-murmur-text">${this.escapeMurmurHtml(m.content)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `
+                    </div>
+                </div>
+            `;
         }
         
         html += `
                     </div>
                     <div class="date-detail-footer">
-                        <button class="btn-view-photos" onclick="calendar.showDatePhotos('${dateStr}', this.closest('.date-detail-modal'))">📷 查看照片 (${photos.length})</button>
+                        <button class="btn-view-photos" onclick="calendar.showDatePhotos('${dateStr}', this.closest('.date-detail-modal'))">📷 照片 (${photos.length})</button>
+                        <button class="btn-write-murmur" onclick="calendar.showMurmurInput('${dateStr}')">💭 写碎碎念</button>
                     </div>
                 </div>
             </div>
@@ -251,6 +315,144 @@ class CoupleCalendar {
         const modal = document.createElement('div');
         modal.innerHTML = html;
         document.body.appendChild(modal);
+    }
+
+    showMurmurInput(dateStr) {
+        const existing = document.getElementById(`murmur-input-modal-${dateStr}`);
+        if (existing) existing.remove();
+
+        const modal = document.createElement('div');
+        modal.className = 'date-murmur-input-modal';
+        modal.id = `murmur-input-modal-${dateStr}`;
+        modal.innerHTML = `
+            <div class="date-murmur-input-content">
+                <div class="date-murmur-input-header">
+                    <h3>💭 写碎碎念</h3>
+                    <button onclick="this.closest('.date-murmur-input-modal').remove()">✕</button>
+                </div>
+                <div class="date-murmur-input-body">
+                    <div class="murmur-author-select">
+                        <div class="murmur-author-item selected" data-author="境" onclick="calendar.selectMurmurAuthor(this, '境')">🌿 境</div>
+                        <div class="murmur-author-item" data-author="扬" onclick="calendar.selectMurmurAuthor(this, '扬')">🌙 扬</div>
+                    </div>
+                    <div class="murmur-input-row">
+                        <div class="murmur-mood-select" id="calMoodSelect-${dateStr}" onclick="calendar.toggleCalMoodPicker('${dateStr}')">💭</div>
+                        <input type="text" id="calMurmurInput-${dateStr}" class="murmur-input" placeholder="此刻在想什么..." maxlength="200" />
+                        <button class="murmur-send-btn" id="calMurmurSendBtn-${dateStr}" onclick="calendar.submitMurmurFromCalendar('${dateStr}')">发送</button>
+                    </div>
+                    <div class="murmurs-mood-picker" id="calMoodPicker-${dateStr}">
+                        <span class="mood-option" onclick="calendar.selectCalMood('${dateStr}', '💭')">💭</span>
+                        <span class="mood-option" onclick="calendar.selectCalMood('${dateStr}', '😊')">😊</span>
+                        <span class="mood-option" onclick="calendar.selectCalMood('${dateStr}', '😢')">😢</span>
+                        <span class="mood-option" onclick="calendar.selectCalMood('${dateStr}', '😤')">😤</span>
+                        <span class="mood-option" onclick="calendar.selectCalMood('${dateStr}', '🥰')">🥰</span>
+                        <span class="mood-option" onclick="calendar.selectCalMood('${dateStr}', '😴')">😴</span>
+                        <span class="mood-option" onclick="calendar.selectCalMood('${dateStr}', '🤔')">🤔</span>
+                        <span class="mood-option" onclick="calendar.selectCalMood('${dateStr}', '🎉')">🎉</span>
+                        <span class="mood-option" onclick="calendar.selectCalMood('${dateStr}', '❤️')">❤️</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        const input = document.getElementById(`calMurmurInput-${dateStr}`);
+        if (input) {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    this.submitMurmurFromCalendar(dateStr);
+                }
+            });
+            input.focus();
+        }
+    }
+
+    selectMurmurAuthor(el, author) {
+        const container = el.closest('.murmur-author-select');
+        if (container) {
+            container.querySelectorAll('.murmur-author-item').forEach(item => {
+                item.classList.toggle('selected', item.dataset.author === author);
+            });
+        }
+    }
+
+    toggleCalMoodPicker(dateStr) {
+        const picker = document.getElementById(`calMoodPicker-${dateStr}`);
+        if (picker) picker.classList.toggle('active');
+    }
+
+    selectCalMood(dateStr, mood) {
+        const btn = document.getElementById(`calMoodSelect-${dateStr}`);
+        if (btn) btn.textContent = mood;
+        const picker = document.getElementById(`calMoodPicker-${dateStr}`);
+        if (picker) picker.classList.remove('active');
+    }
+
+    async submitMurmurFromCalendar(dateStr) {
+        const container = document.querySelector(`#murmur-input-modal-${dateStr}`);
+        if (!container) return;
+
+        const authorEl = container.querySelector('.murmur-author-item.selected');
+        const author = authorEl?.dataset.author || '境';
+        const content = document.getElementById(`calMurmurInput-${dateStr}`)?.value?.trim();
+        const moodEl = document.getElementById(`calMoodSelect-${dateStr}`);
+        const mood = moodEl?.textContent || '💭';
+
+        if (!content) return;
+
+        const sendBtn = document.getElementById(`calMurmurSendBtn-${dateStr}`);
+        if (sendBtn) {
+            sendBtn.disabled = true;
+            sendBtn.textContent = '...';
+        }
+
+        if (typeof murmurs !== 'undefined' && murmurs.supabase) {
+            try {
+                const { error } = await murmurs.supabase
+                    .from(CONFIG.supabase.murmursTable)
+                    .insert([{
+                        author: author,
+                        content: content,
+                        mood: mood
+                    }]);
+
+                if (error) throw error;
+
+                CacheManager.remove('murmurs_cache');
+                await this.loadMurmursData();
+                if (typeof murmurs !== 'undefined' && murmurs.loadMurmursData) {
+                    murmurs.murmursData = [];
+                    await murmurs.loadMurmursData(true);
+                }
+
+                const inputModal = document.getElementById(`murmur-input-modal-${dateStr}`);
+                if (inputModal) inputModal.remove();
+
+                this.clearTransientModals();
+                await this.showDateDetails(dateStr);
+                await this.updateCalendar();
+            } catch (error) {
+                console.error('日历发送碎碎念失败:', error);
+                alert('发送失败，请重试');
+                if (sendBtn) {
+                    sendBtn.disabled = false;
+                    sendBtn.textContent = '发送';
+                }
+            }
+        } else {
+            alert('未连接 Supabase，无法发送');
+            if (sendBtn) {
+                sendBtn.disabled = false;
+                sendBtn.textContent = '发送';
+            }
+        }
+    }
+
+    escapeMurmurHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     async showDatePhotos(dateStr, dateModal) {
