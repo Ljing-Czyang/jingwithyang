@@ -16,55 +16,35 @@ class Murmurs {
     }
 
     prefetch() {
-        const cached = CacheManager.load('murmurs_cache');
-        if (cached) {
+        const cached = DataUtils.loadCachedList('murmurs_cache', []);
+        if (cached.length > 0) {
             this.murmursData = cached;
         }
         if (this.supabase) {
-            this.loadMurmursData(!cached);
+            this.loadMurmursData(!cached.length);
         }
     }
 
 
 
     async loadMurmursData(forceRefresh) {
-        if (this.murmursData.length > 0 && !forceRefresh) return this.murmursData;
-
-        if (!forceRefresh) {
-            const cached = CacheManager.load('murmurs_cache');
-            if (cached) {
-                this.murmursData = cached;
-                return this.murmursData;
-            }
-        }
-
-        if (this.supabase) {
-            try {
-                const { data, error } = await this.supabase
-                    .from(CONFIG.supabase.murmursTable)
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                this.murmursData = data.map(m => ({
-                    id: m.id,
-                    author: m.author,
-                    content: m.content,
-                    mood: m.mood || '💭',
-                    createdAt: m.created_at
-                }));
-
-                CacheManager.save('murmurs_cache', this.murmursData);
-                console.log('Murmurs: 从 Supabase 加载成功');
-                return this.murmursData;
-            } catch (error) {
-                console.error('Murmurs: 从 Supabase 加载失败:', error);
-                return this.murmursData;
-            }
-        }
-
-        this.murmursData = this.murmursData || [];
+        this.murmursData = await DataUtils.loadSupabaseList({
+            currentData: this.murmursData,
+            forceRefresh: forceRefresh,
+            supabase: this.supabase,
+            cacheKey: 'murmurs_cache',
+            tableName: CONFIG.supabase.murmursTable,
+            orderColumn: 'created_at',
+            ascending: false,
+            logLabel: 'Murmurs',
+            mapItem: m => ({
+                id: m.id,
+                author: m.author,
+                content: m.content,
+                mood: m.mood || '💭',
+                createdAt: m.created_at
+            })
+        });
         return this.murmursData;
     }
 

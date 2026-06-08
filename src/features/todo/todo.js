@@ -24,12 +24,12 @@ class TodoList {
      * 优先从本地缓存读取，同时异步从 Supabase 拉取最新数据
      */
     prefetch() {
-        const cached = CacheManager.load('todos_cache');
-        if (cached) {
+        const cached = DataUtils.loadCachedList('todos_cache', []);
+        if (cached.length > 0) {
             this.todosData = cached;
         }
         if (this.supabase) {
-            this.loadTodosData(!cached);
+            this.loadTodosData(!cached.length);
         }
     }
 
@@ -39,44 +39,25 @@ class TodoList {
      * @returns {Promise<Array>} 待办数据数组
      */
     async loadTodosData(forceRefresh) {
-        if (this.todosData.length > 0 && !forceRefresh) return this.todosData;
-
-        if (!forceRefresh) {
-            const cached = CacheManager.load('todos_cache');
-            if (cached) {
-                this.todosData = cached;
-                return this.todosData;
-            }
-        }
-
-        if (this.supabase) {
-            try {
-                const { data, error } = await this.supabase
-                    .from(CONFIG.supabase.todosTable)
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                this.todosData = data.map(t => ({
-                    id: t.id,
-                    content: t.content,
-                    createdBy: t.created_by,
-                    completed: t.completed || false,
-                    completedBy: t.completed_by || null,
-                    completedAt: t.completed_at || null,
-                    createdAt: t.created_at
-                }));
-
-                CacheManager.save('todos_cache', this.todosData);
-                return this.todosData;
-            } catch (error) {
-                console.error('TodoList: 从 Supabase 加载失败:', error);
-                return this.todosData;
-            }
-        }
-
-        this.todosData = this.todosData || [];
+        this.todosData = await DataUtils.loadSupabaseList({
+            currentData: this.todosData,
+            forceRefresh: forceRefresh,
+            supabase: this.supabase,
+            cacheKey: 'todos_cache',
+            tableName: CONFIG.supabase.todosTable,
+            orderColumn: 'created_at',
+            ascending: false,
+            logLabel: 'TodoList',
+            mapItem: t => ({
+                id: t.id,
+                content: t.content,
+                createdBy: t.created_by,
+                completed: t.completed || false,
+                completedBy: t.completed_by || null,
+                completedAt: t.completed_at || null,
+                createdAt: t.created_at
+            })
+        });
         return this.todosData;
     }
 
