@@ -21,7 +21,7 @@ class LoveLetters {
             this.lettersData = cached;
         }
         if (this.supabase) {
-            this.loadLettersData(!cached).then(() => {
+            this.loadLettersData(true).then(() => {
                 this.renderBookCovers();
             });
         }

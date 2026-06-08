@@ -29,7 +29,7 @@ class TodoList {
             this.todosData = cached;
         }
         if (this.supabase) {
-            this.loadTodosData(!cached.length);
+            this.loadTodosData(true);
         }
     }
 

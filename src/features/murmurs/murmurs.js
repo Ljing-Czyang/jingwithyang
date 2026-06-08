@@ -21,7 +21,7 @@ class Murmurs {
             this.murmursData = cached;
         }
         if (this.supabase) {
-            this.loadMurmursData(!cached.length);
+            this.loadMurmursData(true);
         }
     }
 

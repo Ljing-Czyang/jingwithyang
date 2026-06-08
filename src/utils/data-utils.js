@@ -34,7 +34,9 @@ class DataUtils {
      * @returns {Promise<*>} 加载后的数据；失败时返回 currentData 或 fallbackData。
      */
     static async loadRemoteValue(options) {
-        if (options.currentData && !options.forceRefresh) {
+        const hasCurrentData = Boolean(options.currentData);
+
+        if (hasCurrentData && !options.forceRefresh) {
             return options.currentData;
         }
 
@@ -75,8 +77,9 @@ class DataUtils {
      */
     static async loadSupabaseList(options) {
         const currentData = options.currentData || [];
+        const hasCurrentData = currentData.length > 0;
 
-        if (currentData.length > 0 && !options.forceRefresh) {
+        if (hasCurrentData && !options.forceRefresh) {
             return currentData;
         }
 
