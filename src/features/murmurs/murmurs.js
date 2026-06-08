@@ -274,6 +274,8 @@ class Murmurs {
             const isJing = m.author === '境';
             const author = UIUtils.escapeHtml(m.author);
             const mood = UIUtils.escapeHtml(m.mood || '💭');
+            const content = UIUtils.escapeHtml(m.content);
+            const id = UIUtils.escapeInlineHandlerArg(m.id);
             return `
                 <div class="murmur-item ${isJing ? 'murmur-jing' : 'murmur-yang'}">
                     <div class="murmur-avatar">${isJing ? '🌿' : '🌙'}</div>
@@ -283,18 +285,12 @@ class Murmurs {
                             <span class="murmur-mood">${mood}</span>
                             <span class="murmur-time">${this.formatTime(m.createdAt)}</span>
                         </div>
-                        <div class="murmur-content">${this.escapeHtml(m.content)}</div>
+                        <div class="murmur-content">${content}</div>
                     </div>
-                    <button class="murmur-delete-btn" onclick="murmurs.deleteMurmur('${m.id}')">🗑️</button>
+                    <button class="murmur-delete-btn" onclick="murmurs.deleteMurmur('${id}')">🗑️</button>
                 </div>
             `;
         }).join('');
-    }
-
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
     }
 
     close() {

@@ -297,17 +297,6 @@ class TodoList {
     }
 
     /**
-     * HTML 转义，防止 XSS
-     * @param {string} text - 需要转义的文本
-     * @returns {string} 转义后的安全 HTML 字符串
-     */
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    /**
      * 渲染进度条和待办列表
      * 未完成的排在前面，已完成的排在后面并显示灰色划线样式
      */

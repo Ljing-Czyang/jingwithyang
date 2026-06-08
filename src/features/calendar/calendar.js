@@ -286,12 +286,14 @@ class CoupleCalendar {
             `;
             dateMurmurs.forEach(m => {
                 const isJing = m.author === '境';
+                const mood = UIUtils.escapeHtml(m.mood || '💭');
+                const content = UIUtils.escapeHtml(m.content);
                 html += `
                     <div class="date-murmur-item ${isJing ? 'murmur-jing' : 'murmur-yang'}">
                         <span class="date-murmur-avatar">${isJing ? '🌿' : '🌙'}</span>
                         <div class="date-murmur-content">
-                            <span class="date-murmur-mood">${m.mood || '💭'}</span>
-                            <span class="date-murmur-text">${this.escapeMurmurHtml(m.content)}</span>
+                            <span class="date-murmur-mood">${mood}</span>
+                            <span class="date-murmur-text">${content}</span>
                         </div>
                     </div>
                 `;
@@ -460,12 +462,6 @@ class CoupleCalendar {
                 sendBtn.textContent = '发送';
             }
         }
-    }
-
-    escapeMurmurHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
     }
 
     async showDatePhotos(dateStr, dateModal) {
