@@ -16,7 +16,7 @@ class LoveLetters {
     }
 
     prefetch() {
-        const cached = CacheManager.load('loveLetters_cache');
+        const cached = DataUtils.loadCachedValue('loveLetters_cache', null);
         if (cached) {
             this.lettersData = cached;
         }
@@ -36,18 +36,14 @@ class LoveLetters {
     }
 
     async loadLettersData(forceRefresh) {
-        if (this.lettersData && !forceRefresh) return this.lettersData;
-
-        if (!forceRefresh) {
-            const cached = CacheManager.load('loveLetters_cache');
-            if (cached) {
-                this.lettersData = cached;
-                return this.lettersData;
-            }
-        }
-
-        if (this.supabase) {
-            try {
+        this.lettersData = await DataUtils.loadRemoteValue({
+            currentData: this.lettersData,
+            forceRefresh: forceRefresh,
+            supabase: this.supabase,
+            cacheKey: 'loveLetters_cache',
+            fallbackData: LETTERS_DATA || { books: [] },
+            logLabel: 'LoveLetters',
+            fetcher: async () => {
                 const [booksResult, lettersResult] = await Promise.all([
                     this.supabase
                         .from(CONFIG.supabase.letterBooksTable)
@@ -62,7 +58,7 @@ class LoveLetters {
                 if (booksResult.error) throw booksResult.error;
                 if (lettersResult.error) throw lettersResult.error;
 
-                this.lettersData = {
+                return {
                     books: booksResult.data.map(book => ({
                         id: book.id,
                         title: book.title,
@@ -79,16 +75,8 @@ class LoveLetters {
                             }))
                     }))
                 };
-
-                CacheManager.save('loveLetters_cache', this.lettersData);
-                console.log('LoveLetters: 从 Supabase 加载信件成功');
-                return this.lettersData;
-            } catch (error) {
-                console.error('LoveLetters: 从 Supabase 加载失败，使用本地数据:', error);
             }
-        }
-
-        this.lettersData = LETTERS_DATA || { books: [] };
+        });
         return this.lettersData;
     }
 
@@ -97,7 +85,7 @@ class LoveLetters {
             this.close();
         }
 
-        this.lettersData = this.lettersData || CacheManager.load('loveLetters_cache') || LETTERS_DATA || { books: [] };
+        this.lettersData = this.lettersData || DataUtils.loadCachedValue('loveLetters_cache', null) || LETTERS_DATA || { books: [] };
         this.editingLetterId = null;
 
         this.modal = document.createElement('div');
