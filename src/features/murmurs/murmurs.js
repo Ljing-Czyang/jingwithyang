@@ -60,10 +60,11 @@ class Murmurs {
                 return this.murmursData;
             } catch (error) {
                 console.error('Murmurs: 从 Supabase 加载失败:', error);
+                return this.murmursData;
             }
         }
 
-        this.murmursData = [];
+        this.murmursData = this.murmursData || [];
         return this.murmursData;
     }
 

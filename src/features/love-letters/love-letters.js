@@ -362,13 +362,18 @@ class LoveLetters {
             submitBtn.textContent = this.editingLetterId ? '保存中...' : '寄送中...';
         }
 
-        const paragraphs = content.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('\n');
-        const titleHtml = title ? `<h4 style="text-align:center; margin-bottom:20px; font-weight:600;">${title}</h4>\n` : '';
+        const safeTitle = UIUtils.escapeHtml(title || '');
+        const safeContent = UIUtils.escapeHtml(content || '');
+        const safeSign = UIUtils.escapeHtml(sign || '');
+        const safeLocation = UIUtils.escapeHtml(location || '');
+
+        const paragraphs = safeContent.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('\n');
+        const titleHtml = safeTitle ? `<h4 style="text-align:center; margin-bottom:20px; font-weight:600;">${safeTitle}</h4>\n` : '';
         let signHtml = '';
-        if (sign) {
-            const chineseDate = this.formatDateToChinese(date);
-            const locationPart = location ? ` · ${location}` : '';
-            signHtml = `\n<p style="text-align: right;">${sign}</p>\n<p style="text-align: right; color: #999; font-size: 13px;">${chineseDate}${locationPart}</p>`;
+        if (safeSign) {
+            const chineseDate = UIUtils.escapeHtml(this.formatDateToChinese(date));
+            const locationPart = safeLocation ? ` · ${safeLocation}` : '';
+            signHtml = `\n<p style="text-align: right;">${safeSign}</p>\n<p style="text-align: right; color: #999; font-size: 13px;">${chineseDate}${locationPart}</p>`;
         }
         const htmlContent = `${titleHtml}${paragraphs}${signHtml}`;
 

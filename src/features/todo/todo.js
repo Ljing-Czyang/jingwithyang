@@ -72,10 +72,11 @@ class TodoList {
                 return this.todosData;
             } catch (error) {
                 console.error('TodoList: 从 Supabase 加载失败:', error);
+                return this.todosData;
             }
         }
 
-        this.todosData = [];
+        this.todosData = this.todosData || [];
         return this.todosData;
     }
 
@@ -372,6 +373,11 @@ class TodoList {
     renderTodoItem(todo) {
         const isJing = todo.createdBy === '境';
         const completedByJing = todo.completedBy === '境';
+        const content = UIUtils.escapeHtml(todo.content);
+        const createdBy = UIUtils.escapeHtml(todo.createdBy);
+        const createdAt = UIUtils.escapeHtml(this.formatTime(todo.createdAt));
+        const completedBy = UIUtils.escapeHtml(todo.completedBy || '');
+        const completedAt = todo.completedAt ? UIUtils.escapeHtml(this.formatTime(todo.completedAt)) : '';
 
         return `
             <div class="todo-item ${todo.completed ? 'todo-done' : ''} ${isJing ? 'todo-jing' : 'todo-yang'}">
@@ -379,11 +385,11 @@ class TodoList {
                     ${todo.completed ? '✓' : ''}
                 </div>
                 <div class="todo-body">
-                    <div class="todo-content">${this.escapeHtml(todo.content)}</div>
+                    <div class="todo-content">${content}</div>
                     <div class="todo-meta">
-                        <span class="todo-creator">${isJing ? '🌿' : '🌙'} ${todo.createdBy}</span>
-                        <span class="todo-time">${this.formatTime(todo.createdAt)}</span>
-                        ${todo.completed && todo.completedBy ? `<span class="todo-completed-info">${completedByJing ? '🌿' : '🌙'} ${todo.completedBy} 完成${todo.completedAt ? ' · ' + this.formatTime(todo.completedAt) : ''}</span>` : ''}
+                        <span class="todo-creator">${isJing ? '🌿' : '🌙'} ${createdBy}</span>
+                        <span class="todo-time">${createdAt}</span>
+                        ${todo.completed && todo.completedBy ? `<span class="todo-completed-info">${completedByJing ? '🌿' : '🌙'} ${completedBy} 完成${completedAt ? ' · ' + completedAt : ''}</span>` : ''}
                     </div>
                 </div>
                 <button class="todo-delete-btn" onclick="todoList.deleteTodo('${todo.id}')">🗑️</button>
