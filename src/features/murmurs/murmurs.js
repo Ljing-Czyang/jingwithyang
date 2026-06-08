@@ -272,13 +272,15 @@ class Murmurs {
 
         timeline.innerHTML = this.murmursData.map(m => {
             const isJing = m.author === '境';
+            const author = UIUtils.escapeHtml(m.author);
+            const mood = UIUtils.escapeHtml(m.mood || '💭');
             return `
                 <div class="murmur-item ${isJing ? 'murmur-jing' : 'murmur-yang'}">
                     <div class="murmur-avatar">${isJing ? '🌿' : '🌙'}</div>
                     <div class="murmur-bubble">
                         <div class="murmur-bubble-header">
-                            <span class="murmur-author-name">${m.author}</span>
-                            <span class="murmur-mood">${m.mood}</span>
+                            <span class="murmur-author-name">${author}</span>
+                            <span class="murmur-mood">${mood}</span>
                             <span class="murmur-time">${this.formatTime(m.createdAt)}</span>
                         </div>
                         <div class="murmur-content">${this.escapeHtml(m.content)}</div>
