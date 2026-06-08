@@ -98,11 +98,14 @@ class AlbumFeature {
     }
 
     renderPhotoCard(photo) {
+        const thumbnailUrl = UIUtils.escapeHtml(photo.thumbnailUrl);
+        const title = UIUtils.escapeHtml(photo.title || '照片');
+
         return `
             <div class="album-photo-item" onclick="albumFeature.showPhotoDetail('${photo.id}')">
-                <img src="${photo.thumbnailUrl}" alt="${photo.title}" loading="lazy">
+                <img src="${thumbnailUrl}" alt="${title}" loading="lazy">
                 <div class="album-photo-overlay">
-                    <span class="album-photo-avatar">${photo.uploadedByAvatar}</span>
+                    <span class="album-photo-avatar">${UIUtils.escapeHtml(photo.uploadedByAvatar)}</span>
                 </div>
             </div>
         `;
@@ -147,22 +150,29 @@ class AlbumFeature {
         }
         if (!photo) return;
 
+        const title = UIUtils.escapeHtml(photo.title || '照片');
+        const imageUrl = UIUtils.escapeHtml(photo.imageUrl);
+        const date = UIUtils.escapeHtml(photo.date);
+        const description = UIUtils.escapeHtml(photo.description || '');
+        const uploaderAvatar = UIUtils.escapeHtml(photo.uploadedByAvatar);
+        const uploaderName = UIUtils.escapeHtml(photo.uploadedByName);
+
         const modal = document.createElement('div');
         modal.className = 'photo-detail-modal';
         modal.innerHTML = `
             <div class="photo-detail-content">
                 <div class="photo-detail-header">
-                    <h3>📷 ${photo.title || '照片'}</h3>
+                    <h3>📷 ${title}</h3>
                     <button onclick="this.closest('.photo-detail-modal').remove()">✕</button>
                 </div>
                 <div class="photo-detail-body">
-                    <img src="${photo.imageUrl}" alt="${photo.title}" loading="lazy">
+                    <img src="${imageUrl}" alt="${title}" loading="lazy">
                     <div class="photo-detail-info">
-                        <div class="photo-detail-date">📅 ${photo.date}</div>
-                        ${photo.description ? `<div class="photo-detail-desc">${photo.description}</div>` : ''}
+                        <div class="photo-detail-date">📅 ${date}</div>
+                        ${description ? `<div class="photo-detail-desc">${description}</div>` : ''}
                         <div class="photo-detail-uploader">
-                            <span class="uploader-avatar">${photo.uploadedByAvatar}</span>
-                            <span class="uploader-name">${photo.uploadedByName}</span>
+                            <span class="uploader-avatar">${uploaderAvatar}</span>
+                            <span class="uploader-name">${uploaderName}</span>
                         </div>
                     </div>
                 </div>

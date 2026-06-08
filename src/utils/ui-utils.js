@@ -1,4 +1,15 @@
 class UIUtils {
+    /**
+     * 将任意文本转换为安全的 HTML 字符串，避免用户输入直接拼接到模板中造成脚本注入。
+     * @param {string|null|undefined} text - 需要转义的原始文本，可以为空值。
+     * @returns {string} 转义后的 HTML 字符串，可安全插入 innerHTML 模板。
+     */
+    static escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text == null ? '' : String(text);
+        return div.innerHTML;
+    }
+
     static getLoadingView() {
         if (!UIUtils._loadingStyleInjected) {
             const style = document.createElement('style');

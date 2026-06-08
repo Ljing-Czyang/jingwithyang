@@ -67,7 +67,7 @@ class Murmurs {
         return this.murmursData;
     }
 
-    show() {
+    async show() {
         if (this.modal) {
             this.close();
         }
@@ -109,6 +109,8 @@ class Murmurs {
         `;
 
         document.body.appendChild(this.modal);
+        this.renderTimeline();
+        await this.loadMurmursData(true);
         this.renderTimeline();
 
         const input = document.getElementById('murmurInput');

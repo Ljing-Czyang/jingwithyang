@@ -389,6 +389,18 @@ class CoupleCalendar {
         if (picker) picker.classList.remove('active');
     }
 
+    /**
+     * 根据日历选中的日期生成碎碎念创建时间，保留当前时分秒并绑定到指定日期。
+     * @param {string} dateStr - 日历选中的日期字符串，格式为 YYYY-MM-DD。
+     * @returns {string} 绑定到指定日期后的 ISO 时间字符串，用于写入 Supabase 的 created_at 字段。
+     */
+    getCalendarMurmurCreatedAt(dateStr) {
+        const selectedDate = new Date(dateStr);
+        const now = new Date();
+        selectedDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+        return selectedDate.toISOString();
+    }
+
     async submitMurmurFromCalendar(dateStr) {
         const container = document.querySelector(`#murmur-input-modal-${dateStr}`);
         if (!container) return;
@@ -414,17 +426,18 @@ class CoupleCalendar {
                     .insert([{
                         author: author,
                         content: content,
-                        mood: mood
+                        mood: mood,
+                        created_at: this.getCalendarMurmurCreatedAt(dateStr)
                     }]);
 
                 if (error) throw error;
 
                 CacheManager.remove('murmurs_cache');
-                await this.loadMurmursData();
                 if (typeof murmurs !== 'undefined' && murmurs.loadMurmursData) {
                     murmurs.murmursData = [];
                     await murmurs.loadMurmursData(true);
                 }
+                await this.loadMurmursData();
 
                 const inputModal = document.getElementById(`murmur-input-modal-${dateStr}`);
                 if (inputModal) inputModal.remove();
@@ -474,15 +487,19 @@ class CoupleCalendar {
         if (photos.length > 0) {
             html += `<div class="date-photos-grid-full">`;
             photos.forEach((photo, index) => {
+                const thumbnailUrl = UIUtils.escapeHtml(photo.thumbnailUrl);
+                const title = UIUtils.escapeHtml(photo.title || '照片');
+                const uploadedByAvatar = UIUtils.escapeHtml(photo.uploadedByAvatar);
+
                 html += `
                     <div class="date-photo-item-full" onclick="calendar.showPhotoDetail('${photo.id}', '${dateStr}')">
                         <div class="img-skeleton"></div>
-                        <img data-src="${photo.thumbnailUrl}" alt="${photo.title}"
+                        <img data-src="${thumbnailUrl}" alt="${title}"
                              loading="lazy"
                              onload="this.classList.add('loaded'); this.previousElementSibling.style.display='none'"
                              onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f0f0f0%22 width=%22100%22 height=%22100%22/><text x=%2250%%22 y=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%2214%22>加载失败</text></svg>'">
                         <div class="date-photo-overlay-full">
-                            <span class="date-photo-avatar-full">${photo.uploadedByAvatar}</span>
+                            <span class="date-photo-avatar-full">${uploadedByAvatar}</span>
                         </div>
                     </div>
                 `;
@@ -529,27 +546,34 @@ class CoupleCalendar {
         }
         if (!photo) return;
 
+        const title = UIUtils.escapeHtml(photo.title || '照片');
+        const imageUrl = UIUtils.escapeHtml(photo.imageUrl);
+        const date = UIUtils.escapeHtml(photo.date);
+        const description = UIUtils.escapeHtml(photo.description || '');
+        const uploaderAvatar = UIUtils.escapeHtml(photo.uploadedByAvatar);
+        const uploaderName = UIUtils.escapeHtml(photo.uploadedByName);
+
         const modal = document.createElement('div');
         modal.className = 'photo-detail-modal';
         modal.innerHTML = `
             <div class="photo-detail-content">
                 <div class="photo-detail-header">
-                    <h3>📷 ${photo.title || '照片'}</h3>
+                    <h3>📷 ${title}</h3>
                     <button onclick="this.closest('.photo-detail-modal').remove()">✕</button>
                 </div>
                 <div class="photo-detail-body">
                     <div class="photo-img-wrapper">
                         <div class="img-loading-skeleton"></div>
-                        <img data-src="${photo.imageUrl}" alt="${photo.title}"
+                        <img data-src="${imageUrl}" alt="${title}"
                              onload="this.classList.add('loaded'); this.previousElementSibling.style.display='none'"
                              onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 150%22><rect fill=%22%23f0f0f0%22 width=%22200%22 height=%22150%22/><text x=%2250%%22 y=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%23999%22>加载失败</text></svg>'">
                     </div>
                     <div class="photo-detail-info">
-                        <div class="photo-detail-date">📅 ${photo.date}</div>
-                        ${photo.description ? `<div class="photo-detail-desc">${photo.description}</div>` : ''}
+                        <div class="photo-detail-date">📅 ${date}</div>
+                        ${description ? `<div class="photo-detail-desc">${description}</div>` : ''}
                         <div class="photo-detail-uploader">
-                            <span class="uploader-avatar">${photo.uploadedByAvatar}</span>
-                            <span class="uploader-name">${photo.uploadedByName}</span>
+                            <span class="uploader-avatar">${uploaderAvatar}</span>
+                            <span class="uploader-name">${uploaderName}</span>
                         </div>
                     </div>
                 </div>

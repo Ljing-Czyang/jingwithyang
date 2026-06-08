@@ -83,7 +83,7 @@ class TodoList {
      * 显示待办弹窗
      * 创建模态框并渲染待办列表内容
      */
-    show() {
+    async show() {
         if (this.modal) {
             this.close();
         }
@@ -115,6 +115,8 @@ class TodoList {
         `;
 
         document.body.appendChild(this.modal);
+        this.renderList();
+        await this.loadTodosData(true);
         this.renderList();
 
         const input = document.getElementById('todoInput');
