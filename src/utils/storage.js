@@ -69,8 +69,20 @@ class StorageManager {
         }
     }
 
-    async uploadPhoto(file, dateStr, title, description, uploader) {
-        ImageUtils.validateFile(file);
+    /**
+     * 上传或本地保存一张照片，支持普通照片和由组图工具生成的高清图片。
+     * @param {File} file 需要保存的图片文件。
+     * @param {string} dateStr 图片关联日期，格式通常为 YYYY-MM-DD。
+     * @param {string} title 图片标题，可为空字符串。
+     * @param {string} description 图片描述，可为空字符串。
+     * @param {string} uploader 上传者 key，对应 CONFIG.users 中的用户。
+     * @param {Object} options 保存选项，maxSize 表示允许的最大字节数，skipValidation 表示是否跳过文件校验。
+     * @returns {Promise<Object>} 返回保存后的照片数据对象。
+     */
+    async uploadPhoto(file, dateStr, title, description, uploader, options = {}) {
+        if (!options.skipValidation) {
+            ImageUtils.validateFile(file, { maxSize: options.maxSize });
+        }
 
         const photoId = `photo_${Date.now()}`;
         const info = CONFIG.users[uploader] || CONFIG.users.jing;

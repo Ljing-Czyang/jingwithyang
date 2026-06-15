@@ -64,16 +64,23 @@ class ImageUtils {
         });
     }
 
-    static validateFile(file) {
+    /**
+     * 校验图片文件类型和大小，默认沿用普通相册 5MB 限制，也允许调用方传入更高上限用于高清组图。
+     * @param {File} file 需要校验的图片文件对象。
+     * @param {Object} options 校验选项，maxSize 表示允许的最大字节数。
+     * @returns {boolean} 校验通过时返回 true，失败时抛出错误。
+     */
+    static validateFile(file, options = {}) {
         const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-        const maxSize = CONFIG.maxPhotoSize;
+        const maxSize = options.maxSize || CONFIG.maxPhotoSize;
+        const maxSizeMB = Math.round(maxSize / 1024 / 1024);
 
         if (!allowedTypes.includes(file.type)) {
             throw new Error('只支持 JPG、PNG、WebP 格式');
         }
 
         if (file.size > maxSize) {
-            throw new Error('文件大小不能超过 5MB');
+            throw new Error(`文件大小不能超过 ${maxSizeMB}MB`);
         }
 
         return true;

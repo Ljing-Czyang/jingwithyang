@@ -1,0 +1,391 @@
+.collage-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.58);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 3200;
+    padding: 16px;
+}
+
+.collage-content {
+    width: min(1120px, 100%);
+    max-height: calc(100dvh - 32px);
+    background: #fff;
+    border-radius: 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s;
+    box-shadow: 0 24px 70px rgba(45, 52, 54, 0.28);
+}
+
+.collage-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    padding: 22px 26px;
+    border-bottom: 1px solid #f1f2f6;
+    background: linear-gradient(135deg, #fff7fb 0%, #f4f7ff 100%);
+}
+
+.collage-header h3 {
+    margin: 0 0 6px;
+    color: var(--primary-color);
+    font-size: 22px;
+}
+
+.collage-header p {
+    margin: 0;
+    color: #636e72;
+    font-size: 14px;
+}
+
+.collage-header button {
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.85);
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.collage-body {
+    display: grid;
+    grid-template-columns: minmax(320px, 430px) 1fr;
+    gap: 0;
+    overflow: auto;
+}
+
+.collage-panel {
+    padding: 22px;
+    border-right: 1px solid #f1f2f6;
+    background: #ffffff;
+}
+
+.collage-upload-area {
+    border: 2px dashed #ff9fbc;
+    border-radius: 18px;
+    min-height: 138px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-align: center;
+    color: #636e72;
+    cursor: pointer;
+    background: #fff7fb;
+    transition: 0.2s;
+}
+
+.collage-upload-area:hover,
+.collage-upload-area.dragover {
+    border-color: var(--primary-color);
+    background: #fff0f6;
+    transform: translateY(-1px);
+}
+
+.collage-upload-area input {
+    display: none;
+}
+
+.collage-upload-icon {
+    font-size: 34px;
+}
+
+.collage-upload-area strong {
+    color: #2d3436;
+}
+
+.collage-upload-area span {
+    font-size: 13px;
+}
+
+.collage-selected {
+    margin: 16px 0;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    min-height: 58px;
+}
+
+.collage-selected-empty {
+    grid-column: 1 / -1;
+    color: #b2bec3;
+    font-size: 14px;
+    padding: 16px;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 14px;
+}
+
+.collage-thumb {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f1f2f6;
+}
+
+.collage-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.collage-thumb button {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 22px;
+    height: 22px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.58);
+    color: #fff;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.collage-controls {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.collage-field,
+.collage-check,
+.collage-uploader {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    color: #636e72;
+}
+
+.collage-field span,
+.collage-uploader > span {
+    font-weight: 600;
+    color: #2d3436;
+}
+
+.collage-field select,
+.collage-field input[type="text"] {
+    width: 100%;
+    border: 1px solid #dfe6e9;
+    border-radius: 12px;
+    padding: 10px 12px;
+    background: #fff;
+    color: #2d3436;
+    outline: none;
+}
+
+.collage-field input[type="color"] {
+    width: 100%;
+    height: 42px;
+    border: 1px solid #dfe6e9;
+    border-radius: 12px;
+    padding: 4px;
+    background: #fff;
+}
+
+.collage-field input[type="range"] {
+    width: 100%;
+    accent-color: var(--primary-color);
+}
+
+.collage-field-full {
+    grid-column: 1 / -1;
+}
+
+.collage-check {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    background: #f8f9fa;
+    border-radius: 14px;
+    padding: 12px;
+    cursor: pointer;
+}
+
+.collage-check input,
+.collage-uploader input {
+    accent-color: var(--primary-color);
+}
+
+.collage-uploader {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    background: #fff7fb;
+    border-radius: 14px;
+    padding: 12px;
+}
+
+.collage-preview-panel {
+    min-height: 520px;
+    padding: 22px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #fff7fb 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.collage-preview-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    color: #2d3436;
+}
+
+.collage-preview-head span {
+    color: #636e72;
+    font-size: 13px;
+}
+
+.collage-preview-wrap {
+    position: relative;
+    flex: 1;
+    min-height: 420px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.78);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgba(223, 230, 233, 0.8);
+}
+
+#collage-preview-canvas {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+    box-shadow: 0 12px 40px rgba(45, 52, 54, 0.16);
+}
+
+.collage-empty-preview {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #b2bec3;
+    font-size: 15px;
+    text-align: center;
+    padding: 24px;
+}
+
+.collage-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 18px 22px;
+    border-top: 1px solid #f1f2f6;
+    background: #fff;
+    flex-wrap: wrap;
+}
+
+.collage-btn {
+    border: none;
+    padding: 11px 18px;
+    border-radius: 22px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.collage-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.collage-btn.primary {
+    background: linear-gradient(135deg, #ff6b81 0%, #ff8e53 100%);
+    color: white;
+}
+
+.collage-btn.secondary {
+    background: #f1f2f6;
+    color: #2d3436;
+}
+
+.collage-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(45, 52, 54, 0.12);
+}
+
+@media (max-width: 860px) {
+    .collage-content {
+        max-height: calc(100dvh - 20px);
+    }
+
+    .collage-body {
+        grid-template-columns: 1fr;
+    }
+
+    .collage-panel {
+        border-right: none;
+        border-bottom: 1px solid #f1f2f6;
+    }
+
+    .collage-preview-panel {
+        min-height: 440px;
+    }
+
+    .collage-preview-wrap {
+        min-height: 340px;
+    }
+}
+
+@media (max-width: 520px) {
+    .collage-modal {
+        padding: 0;
+        align-items: stretch;
+    }
+
+    .collage-content {
+        border-radius: 0;
+        max-height: 100dvh;
+    }
+
+    .collage-header,
+    .collage-panel,
+    .collage-preview-panel,
+    .collage-footer {
+        padding: 16px;
+    }
+
+    .collage-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .collage-selected {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .collage-preview-panel {
+        min-height: 360px;
+    }
+
+    .collage-preview-wrap {
+        min-height: 280px;
+    }
+
+    .collage-footer {
+        justify-content: stretch;
+    }
+
+    .collage-btn {
+        flex: 1 1 45%;
+    }
+}
