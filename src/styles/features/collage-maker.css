@@ -351,41 +351,288 @@
     .collage-modal {
         padding: 0;
         align-items: stretch;
+        background: #ffffff;
     }
 
     .collage-content {
-        border-radius: 0;
+        width: 100%;
+        height: 100dvh;
         max-height: 100dvh;
+        border-radius: 0;
+        box-shadow: none;
     }
 
-    .collage-header,
-    .collage-panel,
-    .collage-preview-panel,
+    .collage-header {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        align-items: center;
+        padding: calc(12px + env(safe-area-inset-top)) 14px 12px;
+        background: rgba(255, 247, 251, 0.96);
+        backdrop-filter: blur(14px);
+    }
+
+    .collage-header h3 {
+        margin-bottom: 2px;
+        font-size: 19px;
+    }
+
+    .collage-header p {
+        max-width: 250px;
+        font-size: 12px;
+        line-height: 1.35;
+    }
+
+    .collage-header button {
+        flex: 0 0 auto;
+        width: 38px;
+        height: 38px;
+        font-size: 17px;
+        box-shadow: 0 6px 18px rgba(45, 52, 54, 0.1);
+    }
+
+    .collage-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: auto;
+        padding-bottom: calc(92px + env(safe-area-inset-bottom));
+        background: linear-gradient(180deg, #fff7fb 0%, #ffffff 34%, #f8f9fa 100%);
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .collage-panel {
+        order: 2;
+        padding: 12px 14px 18px;
+        border-right: none;
+        border-bottom: none;
+        background: transparent;
+    }
+
+    .collage-preview-panel {
+        order: 1;
+        min-height: auto;
+        padding: 12px 14px 10px;
+        background: transparent;
+        gap: 10px;
+    }
+
+    .collage-preview-head {
+        padding: 0 2px;
+    }
+
+    .collage-preview-head strong {
+        font-size: 15px;
+    }
+
+    .collage-preview-head span {
+        font-size: 12px;
+    }
+
+    .collage-preview-wrap {
+        min-height: min(58vh, 430px);
+        max-height: 58vh;
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 16px 42px rgba(255, 107, 129, 0.14), inset 0 0 0 1px rgba(255, 159, 188, 0.18);
+    }
+
+    #collage-preview-canvas {
+        max-width: calc(100vw - 44px);
+        max-height: calc(58vh - 28px);
+        border-radius: 16px;
+        box-shadow: 0 10px 28px rgba(45, 52, 54, 0.18);
+    }
+
+    .collage-empty-preview {
+        font-size: 14px;
+        line-height: 1.6;
+        padding: 28px;
+    }
+
+    .collage-upload-area {
+        min-height: 98px;
+        border-radius: 20px;
+        gap: 5px;
+        background: rgba(255, 247, 251, 0.95);
+    }
+
+    .collage-upload-icon {
+        font-size: 28px;
+    }
+
+    .collage-upload-area strong {
+        font-size: 14px;
+    }
+
+    .collage-upload-area span {
+        font-size: 12px;
+    }
+
+    .collage-selected {
+        display: flex;
+        grid-template-columns: none;
+        gap: 9px;
+        min-height: 72px;
+        margin: 12px -14px 14px;
+        padding: 0 14px 4px;
+        overflow-x: auto;
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .collage-selected::-webkit-scrollbar {
+        display: none;
+    }
+
+    .collage-thumb {
+        flex: 0 0 64px;
+        width: 64px;
+        border-radius: 16px;
+        scroll-snap-align: start;
+        box-shadow: 0 8px 20px rgba(45, 52, 54, 0.12);
+    }
+
+    .collage-thumb button {
+        top: 5px;
+        right: 5px;
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+    }
+
+    .collage-selected-empty {
+        min-width: calc(100vw - 28px);
+        padding: 14px;
+        border-radius: 16px;
+        font-size: 13px;
+    }
+
+    .collage-controls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .collage-field,
+    .collage-check,
+    .collage-uploader {
+        gap: 5px;
+        font-size: 12px;
+    }
+
+    .collage-field span,
+    .collage-uploader > span {
+        font-size: 12px;
+    }
+
+    .collage-field select,
+    .collage-field input[type="text"] {
+        min-height: 42px;
+        border-radius: 14px;
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .collage-field input[type="color"] {
+        height: 42px;
+        border-radius: 14px;
+    }
+
+    .collage-field input[type="range"] {
+        height: 34px;
+    }
+
+    .collage-field-full {
+        grid-column: 1 / -1;
+    }
+
+    .collage-check {
+        min-height: 44px;
+        border-radius: 16px;
+        padding: 12px;
+        background: rgba(248, 249, 250, 0.96);
+    }
+
+    .collage-uploader {
+        border-radius: 16px;
+        padding: 12px;
+    }
+
     .collage-footer {
-        padding: 16px;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 4;
+        display: grid;
+        grid-template-columns: 0.78fr 1fr 1fr;
+        gap: 8px;
+        padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+        border-top: 1px solid rgba(241, 242, 246, 0.92);
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(16px);
+        box-shadow: 0 -14px 36px rgba(45, 52, 54, 0.12);
     }
 
+    .collage-btn {
+        min-height: 46px;
+        padding: 10px 8px;
+        border-radius: 16px;
+        font-size: 13px;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+
+    #collage-clear-btn {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    #collage-share-btn {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    #collage-download-btn {
+        grid-column: 3;
+        grid-row: 1;
+    }
+
+    #collage-save-btn {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        min-height: 48px;
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 380px) {
     .collage-controls {
         grid-template-columns: 1fr;
     }
 
-    .collage-selected {
-        grid-template-columns: repeat(4, 1fr);
-    }
-
-    .collage-preview-panel {
-        min-height: 360px;
-    }
-
     .collage-preview-wrap {
-        min-height: 280px;
+        min-height: min(54vh, 360px);
+        max-height: 54vh;
+    }
+
+    #collage-preview-canvas {
+        max-height: calc(54vh - 26px);
     }
 
     .collage-footer {
-        justify-content: stretch;
+        grid-template-columns: 1fr 1fr;
     }
 
-    .collage-btn {
-        flex: 1 1 45%;
+    #collage-clear-btn,
+    #collage-share-btn,
+    #collage-download-btn,
+    #collage-save-btn {
+        grid-column: auto;
+        grid-row: auto;
+    }
+
+    #collage-save-btn {
+        grid-column: 1 / -1;
     }
 }

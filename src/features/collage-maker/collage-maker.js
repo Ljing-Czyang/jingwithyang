@@ -50,16 +50,25 @@ class CollageMaker {
     }
 
     /**
+     * 判断当前是否更接近手机端窄屏交互，用于输出更短的移动端按钮文案。
+     * @returns {boolean} 如果视口宽度不超过 520px 则返回 true，否则返回 false。
+     */
+    isMobileView() {
+        return window.matchMedia && window.matchMedia('(max-width: 520px)').matches;
+    }
+
+    /**
      * 渲染组图工具弹窗 HTML，包含上传区域、参数面板、预览画布和导出操作区。
      * @returns {string} 返回可插入页面的弹窗 HTML 字符串。
      */
     renderModal() {
+        const isMobile = this.isMobileView();
         return `
             <div class="collage-content">
                 <div class="collage-header">
                     <div>
                         <h3>🧩 组图工具</h3>
-                        <p>高清拼图，可下载，也可保存到私密相册</p>
+                        <p>${isMobile ? '先看预览，再调整版式，底部一键保存' : '高清拼图，可下载，也可保存到私密相册'}</p>
                     </div>
                     <button onclick="collageMaker.close()">✕</button>
                 </div>
@@ -158,9 +167,9 @@ class CollageMaker {
                 </div>
                 <div class="collage-footer">
                     <button class="collage-btn secondary" id="collage-clear-btn">清空</button>
-                    <button class="collage-btn secondary" id="collage-share-btn">系统分享/保存</button>
-                    <button class="collage-btn primary" id="collage-download-btn">下载高清组图</button>
-                    <button class="collage-btn primary" id="collage-save-btn">生成并处理</button>
+                    <button class="collage-btn secondary" id="collage-share-btn">${isMobile ? '分享' : '系统分享/保存'}</button>
+                    <button class="collage-btn primary" id="collage-download-btn">${isMobile ? '下载' : '下载高清组图'}</button>
+                    <button class="collage-btn primary" id="collage-save-btn">${isMobile ? '生成组图' : '生成并处理'}</button>
                 </div>
             </div>
         `;
@@ -1015,7 +1024,7 @@ class CollageMaker {
             alert(error.message || '组图处理失败，请重试');
         } finally {
             saveBtn.disabled = false;
-            saveBtn.textContent = '生成并处理';
+            saveBtn.textContent = this.isMobileView() ? '生成组图' : '生成并处理';
         }
     }
 
