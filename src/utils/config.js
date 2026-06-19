@@ -26,7 +26,8 @@ const CONFIG = {
         letterBooksTable: "letter_books",
         lettersTable: "letters",
         murmursTable: "murmurs",
-        todosTable: "todos"
+        todosTable: "todos",
+        timePlansTable: "time_plans"
     }
 };
 
