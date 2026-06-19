@@ -4,6 +4,24 @@ class CollageMaker {
         this.previewCanvas = null;
         this.latestBlob = null;
         this.maxCanvasPixels = 18000000;
+        /** 拖拽交互状态，null 表示未在拖拽 */
+        this.dragState = null;
+        /** 最近一次绘制使用的布局矩形缓存，供命中检测使用 */
+        this.lastLayoutRects = [];
+        /** 操作历史栈，存储每次操作前的 items 顺序快照（id 数组） */
+        this.history = [];
+        /** 当前历史指针位置，-1 表示无历史 */
+        this.historyIndex = -1;
+        /** 最大历史记录条数 */
+        this.maxHistory = 30;
+        /** IndexedDB 数据库名称 */
+        this.dbName = 'collage-maker-db';
+        /** IndexedDB 存储仓库名称 */
+        this.storeName = 'images';
+        /** localStorage 状态键名 */
+        this.stateKey = 'collage-maker-state';
+        /** 图片缓存，避免拖拽时重复加载 */
+        this.imageCache = new Map();
         this.defaultSettings = {
             template: 'magazine',
             style: 'romantic',
@@ -26,27 +44,42 @@ class CollageMaker {
      * 显示组图工具弹窗，创建完整的图片选择、排版配置、预览导出和相册保存界面。
      * @returns {void} 该方法不返回值，会直接向页面中插入组图工具弹窗。
      */
-    show() {
-        this.close();
+    async show() {
+        this.close(false);
+        if (this.items.length === 0) {
+            await this.restoreState();
+        }
         const modal = document.createElement('div');
         modal.className = 'collage-modal';
         modal.innerHTML = this.renderModal();
         document.body.appendChild(modal);
         this.previewCanvas = document.getElementById('collage-preview-canvas');
         this.bindEvents(modal);
+        this.initDragInteraction();
         this.renderSelectedImages();
         this.renderPreview();
     }
 
     /**
      * 关闭当前组图工具弹窗，并释放本地图片预览地址以避免浏览器内存占用持续增加。
+     * @param {boolean} [clearState=true] 是否清除持久化状态和 IndexedDB 缓存，传入 false 表示保留状态以便下次恢复。
      * @returns {void} 该方法不返回值。
      */
-    close() {
+    close(clearState = true) {
+        if (clearState) {
+            this.clearPersistedState();
+        } else if (this.items.length > 0) {
+            this.saveState();
+        }
         document.querySelectorAll('.collage-modal').forEach(el => el.remove());
         this.items.forEach(item => URL.revokeObjectURL(item.url));
         this.items = [];
         this.latestBlob = null;
+        this.dragState = null;
+        this.lastLayoutRects = [];
+        this.history = [];
+        this.historyIndex = -1;
+        this.imageCache.clear();
     }
 
     /**
@@ -159,6 +192,7 @@ class CollageMaker {
                             <strong>高清预览</strong>
                             <span id="collage-size-tip">等待选择图片</span>
                         </div>
+                        <div class="collage-drag-hint" id="collage-drag-hint">提示：在预览图上长按拖拽可交换图片位置</div>
                         <div class="collage-preview-wrap">
                             <canvas id="collage-preview-canvas"></canvas>
                             <div class="collage-empty-preview" id="collage-empty-preview">选择照片后自动生成组图</div>
@@ -166,6 +200,10 @@ class CollageMaker {
                     </div>
                 </div>
                 <div class="collage-footer">
+                    <div class="collage-undo-redo">
+                        <button class="collage-btn icon-btn" id="collage-undo-btn" disabled title="撤销">↶</button>
+                        <button class="collage-btn icon-btn" id="collage-redo-btn" disabled title="重做">↷</button>
+                    </div>
                     <button class="collage-btn secondary" id="collage-clear-btn">清空</button>
                     <button class="collage-btn secondary" id="collage-share-btn">${isMobile ? '分享' : '系统分享/保存'}</button>
                     <button class="collage-btn primary" id="collage-download-btn">${isMobile ? '下载' : '下载高清组图'}</button>
@@ -227,6 +265,8 @@ class CollageMaker {
         modal.querySelector('#collage-download-btn').addEventListener('click', () => this.downloadCollage());
         modal.querySelector('#collage-share-btn').addEventListener('click', () => this.shareCollage());
         modal.querySelector('#collage-save-btn').addEventListener('click', () => this.generateAndHandleCollage());
+        modal.querySelector('#collage-undo-btn').addEventListener('click', () => this.undo());
+        modal.querySelector('#collage-redo-btn').addEventListener('click', () => this.redo());
     }
 
     /**
@@ -255,6 +295,8 @@ class CollageMaker {
         }
 
         this.renderSelectedImages();
+        this.pushHistory();
+        this.saveState();
         await this.renderPreview();
     }
 
@@ -315,6 +357,8 @@ class CollageMaker {
         if (item) URL.revokeObjectURL(item.url);
         this.items = this.items.filter(photo => photo.id !== id);
         this.renderSelectedImages();
+        this.pushHistory();
+        this.saveState();
         await this.renderPreview();
     }
 
@@ -326,6 +370,11 @@ class CollageMaker {
         this.items.forEach(item => URL.revokeObjectURL(item.url));
         this.items = [];
         this.latestBlob = null;
+        this.history = [];
+        this.historyIndex = -1;
+        this.dragState = null;
+        this.imageCache.clear();
+        this.clearPersistedState();
         this.renderSelectedImages();
         await this.renderPreview();
     }
@@ -626,12 +675,17 @@ class CollageMaker {
 
         this.drawText(ctx, size.width, settings);
         const rects = this.getLayoutRects(size.width, size.height, settings).sort((a, b) => a.z - b.z);
+        this.lastLayoutRects = rects;
         for (let index = 0; index < rects.length; index++) {
             const rect = rects[index];
             const image = await this.loadImage(this.items[index].url);
             this.drawImageInRect(ctx, image, rect, settings, index);
         }
         this.drawFooterMark(ctx, size.width, size.height, settings);
+
+        if (this.dragState) {
+            this.drawDragOverlay(ctx, size, settings, rects);
+        }
 
         const sizeTip = document.getElementById('collage-size-tip');
         if (sizeTip) sizeTip.textContent = `${size.width} × ${size.height}px · ${this.items.length} 张`;
@@ -848,9 +902,15 @@ class CollageMaker {
      * @returns {Promise<HTMLImageElement>} 返回加载完成的图片元素。
      */
     loadImage(src) {
+        if (this.imageCache.has(src)) {
+            return Promise.resolve(this.imageCache.get(src));
+        }
         return new Promise((resolve, reject) => {
             const image = new Image();
-            image.onload = () => resolve(image);
+            image.onload = () => {
+                this.imageCache.set(src, image);
+                resolve(image);
+            };
             image.onerror = () => reject(new Error('组图图片加载失败'));
             image.src = src;
         });
@@ -1048,6 +1108,465 @@ class CollageMaker {
 
         if (typeof albumFeature !== 'undefined') {
             await albumFeature.refresh();
+        }
+    }
+
+    /**
+     * 在预览画布上初始化指针事件监听，支持鼠标和触摸拖拽图片交换位置。
+     * @returns {void} 该方法不返回值。
+     */
+    initDragInteraction() {
+        if (!this.previewCanvas) return;
+        const canvas = this.previewCanvas;
+
+        canvas.style.touchAction = 'none';
+        canvas.style.cursor = 'grab';
+
+        canvas.addEventListener('pointerdown', event => this.handleDragStart(event));
+        canvas.addEventListener('pointermove', event => this.handleDragMove(event));
+        canvas.addEventListener('pointerup', event => this.handleDragEnd(event));
+        canvas.addEventListener('pointercancel', event => this.handleDragEnd(event));
+        canvas.addEventListener('pointerleave', event => this.handleDragEnd(event));
+    }
+
+    /**
+     * 将指针事件的屏幕坐标转换为画布内部坐标，用于命中检测和拖拽预览定位。
+     * @param {PointerEvent} event 指针事件对象。
+     * @returns {{x: number, y: number}} 返回画布内部坐标。
+     */
+    getCanvasPoint(event) {
+        const canvas = this.previewCanvas;
+        if (!canvas) return { x: 0, y: 0 };
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        return {
+            x: (event.clientX - rect.left) * scaleX,
+            y: (event.clientY - rect.top) * scaleY
+        };
+    }
+
+    /**
+     * 对当前布局矩形进行命中检测，返回指针所在矩形的索引。
+     * @param {{x: number, y: number}} point 画布内部坐标。
+     * @param {Array<Object>} rects 布局矩形数组。
+     * @returns {number} 返回命中矩形的索引，未命中返回 -1。
+     */
+    hitTestRects(point, rects) {
+        for (let i = rects.length - 1; i >= 0; i--) {
+            const r = rects[i];
+            if (point.x >= r.x && point.x <= r.x + r.width &&
+                point.y >= r.y && point.y <= r.y + r.height) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * 处理指针按下事件，命中图片时启动拖拽操作。
+     * @param {PointerEvent} event 指针事件对象。
+     * @returns {void} 该方法不返回值。
+     */
+    handleDragStart(event) {
+        if (this.items.length < 2 || this.lastLayoutRects.length === 0) return;
+
+        const point = this.getCanvasPoint(event);
+        const index = this.hitTestRects(point, this.lastLayoutRects);
+        if (index < 0) return;
+
+        event.preventDefault();
+        this.previewCanvas.setPointerCapture(event.pointerId);
+        this.previewCanvas.style.cursor = 'grabbing';
+
+        this.dragState = {
+            startIndex: index,
+            targetIndex: index,
+            currentX: point.x,
+            currentY: point.y,
+            pointerId: event.pointerId
+        };
+
+        const hint = document.getElementById('collage-drag-hint');
+        if (hint) hint.textContent = '拖拽中...松开手指交换位置';
+    }
+
+    /**
+     * 处理指针移动事件，更新拖拽位置并实时重绘视觉反馈。
+     * @param {PointerEvent} event 指针事件对象。
+     * @returns {void} 该方法不返回值。
+     */
+    handleDragMove(event) {
+        if (!this.dragState) return;
+
+        event.preventDefault();
+        const point = this.getCanvasPoint(event);
+        const canvas = this.previewCanvas;
+        const clampedX = Math.max(0, Math.min(point.x, canvas.width));
+        const clampedY = Math.max(0, Math.min(point.y, canvas.height));
+
+        this.dragState.currentX = clampedX;
+        this.dragState.currentY = clampedY;
+
+        const targetIndex = this.hitTestRects({ x: clampedX, y: clampedY }, this.lastLayoutRects);
+        if (targetIndex >= 0 && targetIndex !== this.dragState.startIndex) {
+            this.dragState.targetIndex = targetIndex;
+        } else if (targetIndex === this.dragState.startIndex) {
+            this.dragState.targetIndex = this.dragState.startIndex;
+        }
+
+        this.renderPreviewSync();
+    }
+
+    /**
+     * 处理指针释放事件，若目标位置不同则交换图片顺序并推入历史栈。
+     * @param {PointerEvent} event 指针事件对象。
+     * @returns {void} 该方法不返回值。
+     */
+    handleDragEnd(event) {
+        if (!this.dragState) return;
+
+        event.preventDefault();
+        const { startIndex, targetIndex } = this.dragState;
+
+        if (targetIndex !== startIndex && targetIndex >= 0 && targetIndex < this.items.length) {
+            const newItems = [...this.items];
+            const temp = newItems[startIndex];
+            newItems[startIndex] = newItems[targetIndex];
+            newItems[targetIndex] = temp;
+            this.items = newItems;
+            this.pushHistory();
+            this.saveState();
+        }
+
+        this.dragState = null;
+        this.previewCanvas.style.cursor = 'grab';
+
+        const hint = document.getElementById('collage-drag-hint');
+        if (hint) hint.textContent = '提示：在预览图上长按拖拽可交换图片位置';
+
+        this.renderPreview();
+    }
+
+    /**
+     * 同步重绘预览画布并叠加拖拽视觉反馈，避免异步加载导致拖拽卡顿。
+     * @returns {void} 该方法不返回值。
+     */
+    renderPreviewSync() {
+        if (!this.previewCanvas || this.items.length === 0) return;
+        const settings = this.getSettings();
+        const size = this.getCanvasSize(settings);
+        if (this.previewCanvas.width !== size.width || this.previewCanvas.height !== size.height) {
+            this.previewCanvas.width = size.width;
+            this.previewCanvas.height = size.height;
+        }
+        const ctx = this.previewCanvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        this.drawBackground(ctx, size.width, size.height, settings);
+        this.drawDecorations(ctx, size.width, size.height, settings);
+        this.drawText(ctx, size.width, settings);
+        const rects = this.lastLayoutRects.length === this.items.length
+            ? this.lastLayoutRects
+            : this.getLayoutRects(size.width, size.height, settings).sort((a, b) => a.z - b.z);
+        this.lastLayoutRects = rects;
+        for (let index = 0; index < rects.length; index++) {
+            const rect = rects[index];
+            const cached = this.imageCache.get(this.items[index].url);
+            if (cached) {
+                this.drawImageInRect(ctx, cached, rect, settings, index);
+            }
+        }
+        this.drawFooterMark(ctx, size.width, size.height, settings);
+        if (this.dragState) {
+            this.drawDragOverlay(ctx, size, settings, rects);
+        }
+    }
+
+    /**
+     * 在画布上绘制拖拽视觉反馈，包括半透明拖拽预览、目标位置高亮和指示线。
+     * @param {CanvasRenderingContext2D} ctx 画布 2D 绘制上下文。
+     * @param {{width: number, height: number}} size 画布尺寸。
+     * @param {Object} settings 当前组图设置对象。
+     * @param {Array<Object>} rects 当前布局矩形数组。
+     * @returns {void} 该方法不返回值。
+     */
+    drawDragOverlay(ctx, size, settings, rects) {
+        const ds = this.dragState;
+        if (!ds) return;
+
+        const sourceRect = rects[ds.startIndex];
+        const targetRect = rects[ds.targetIndex];
+        if (!sourceRect) return;
+
+        ctx.save();
+
+        if (targetRect && ds.targetIndex !== ds.startIndex) {
+            ctx.strokeStyle = '#ff6b81';
+            ctx.lineWidth = Math.max(4, size.width * 0.006);
+            ctx.setLineDash([Math.max(8, size.width * 0.012), Math.max(6, size.width * 0.008)]);
+            this.roundRect(ctx, targetRect.x, targetRect.y, targetRect.width, targetRect.height, Math.min(settings.radius, 42));
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.strokeStyle = 'rgba(255, 107, 129, 0.5)';
+            ctx.lineWidth = Math.max(2, size.width * 0.003);
+            ctx.beginPath();
+            ctx.moveTo(sourceRect.x + sourceRect.width / 2, sourceRect.y + sourceRect.height / 2);
+            ctx.lineTo(targetRect.x + targetRect.width / 2, targetRect.y + targetRect.height / 2);
+            ctx.stroke();
+        }
+
+        ctx.globalAlpha = 0.35;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        this.roundRect(ctx, sourceRect.x, sourceRect.y, sourceRect.width, sourceRect.height, Math.min(settings.radius, 42));
+        ctx.fill();
+
+        const previewW = sourceRect.width * 0.9;
+        const previewH = sourceRect.height * 0.9;
+        const previewX = ds.currentX - previewW / 2;
+        const previewY = ds.currentY - previewH / 2;
+
+        ctx.globalAlpha = 0.85;
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+        ctx.shadowBlur = 24;
+        ctx.shadowOffsetY = 12;
+        ctx.fillStyle = '#ffffff';
+        this.roundRect(ctx, previewX, previewY, previewW, previewH, Math.min(settings.radius, 42));
+        ctx.fill();
+        ctx.shadowColor = 'transparent';
+
+        const cached = this.imageCache.get(this.items[ds.startIndex].url);
+        if (cached) {
+            ctx.save();
+            this.roundRect(ctx, previewX, previewY, previewW, previewH, Math.min(settings.radius, 42));
+            ctx.clip();
+            const scale = Math.max(previewW / cached.naturalWidth, previewH / cached.naturalHeight);
+            const drawW = cached.naturalWidth * scale;
+            const drawH = cached.naturalHeight * scale;
+            ctx.drawImage(cached, previewX + (previewW - drawW) / 2, previewY + (previewH - drawH) / 2, drawW, drawH);
+            ctx.restore();
+        }
+
+        ctx.restore();
+    }
+
+    /**
+     * 将当前图片顺序快照推入历史栈，截断重做分支并更新按钮状态。
+     * @returns {void} 该方法不返回值。
+     */
+    pushHistory() {
+        const snapshot = this.items.map(item => item.id);
+        if (this.historyIndex >= 0 && this.history.length > 0) {
+            const last = this.history[this.historyIndex];
+            if (last && last.join(',') === snapshot.join(',')) return;
+        }
+        this.history = this.history.slice(0, this.historyIndex + 1);
+        this.history.push(snapshot);
+        if (this.history.length > this.maxHistory) {
+            this.history.shift();
+        }
+        this.historyIndex = this.history.length - 1;
+        this.updateUndoRedoButtons();
+    }
+
+    /**
+     * 撤销上一次操作，从历史栈恢复前一个快照并重绘预览。
+     * @returns {void} 该方法不返回值。
+     */
+    undo() {
+        if (this.historyIndex <= 0) return;
+        this.historyIndex--;
+        this.restoreFromHistory();
+        this.updateUndoRedoButtons();
+        this.saveState();
+        this.renderSelectedImages();
+        this.renderPreview();
+    }
+
+    /**
+     * 重做上一次撤销的操作，从历史栈恢复下一个快照并重绘预览。
+     * @returns {void} 该方法不返回值。
+     */
+    redo() {
+        if (this.historyIndex >= this.history.length - 1) return;
+        this.historyIndex++;
+        this.restoreFromHistory();
+        this.updateUndoRedoButtons();
+        this.saveState();
+        this.renderSelectedImages();
+        this.renderPreview();
+    }
+
+    /**
+     * 根据当前历史指针位置的快照恢复 items 顺序。
+     * @returns {void} 该方法不返回值。
+     */
+    restoreFromHistory() {
+        const snapshot = this.history[this.historyIndex];
+        if (!snapshot) return;
+        const idMap = new Map(this.items.map(item => [item.id, item]));
+        this.items = snapshot.map(id => idMap.get(id)).filter(Boolean);
+    }
+
+    /**
+     * 根据历史栈状态更新撤销/重做按钮的可用性。
+     * @returns {void} 该方法不返回值。
+     */
+    updateUndoRedoButtons() {
+        const undoBtn = document.getElementById('collage-undo-btn');
+        const redoBtn = document.getElementById('collage-redo-btn');
+        if (undoBtn) undoBtn.disabled = this.historyIndex <= 0;
+        if (redoBtn) redoBtn.disabled = this.historyIndex >= this.history.length - 1;
+    }
+
+    /**
+     * 将当前图片顺序和设置保存到 localStorage，图片 Blob 保存到 IndexedDB，确保刷新页面后可恢复。
+     * @returns {void} 该方法不返回值。
+     */
+    saveState() {
+        try {
+            const state = {
+                order: this.items.map(item => ({
+                    id: item.id,
+                    name: item.file.name,
+                    width: item.width,
+                    height: item.height
+                })),
+                timestamp: Date.now()
+            };
+            localStorage.setItem(this.stateKey, JSON.stringify(state));
+            this.saveImagesToDB();
+        } catch (e) {
+            // 存储空间不足时静默失败，不影响用户操作
+        }
+    }
+
+    /**
+     * 从 localStorage 恢复图片顺序，并从 IndexedDB 恢复图片 Blob。
+     * @returns {Promise<boolean>} 返回是否成功恢复了状态。
+     */
+    async restoreState() {
+        try {
+            const raw = localStorage.getItem(this.stateKey);
+            if (!raw) return false;
+            const state = JSON.parse(raw);
+            if (!state.order || state.order.length === 0) return false;
+
+            const images = await this.loadImagesFromDB();
+            if (!images || images.length === 0) return false;
+
+            const imageMap = new Map(images.map(img => [img.name, img.blob]));
+            const restored = [];
+            for (const meta of state.order) {
+                const blob = imageMap.get(meta.name);
+                if (!blob) continue;
+                const url = URL.createObjectURL(blob);
+                const item = {
+                    id: meta.id,
+                    file: new File([blob], meta.name, { type: blob.type }),
+                    url,
+                    width: meta.width,
+                    height: meta.height
+                };
+                restored.push(item);
+            }
+            if (restored.length === 0) return false;
+            this.items = restored;
+            this.pushHistory();
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    /**
+     * 清除 localStorage 中的组图状态和 IndexedDB 中的图片缓存。
+     * @returns {void} 该方法不返回值。
+     */
+    clearPersistedState() {
+        try {
+            localStorage.removeItem(this.stateKey);
+            this.clearDB();
+        } catch (e) {
+            // 清除失败时静默处理
+        }
+    }
+
+    /**
+     * 打开或创建 IndexedDB 数据库连接，返回数据库实例。
+     * @returns {Promise<IDBDatabase>} 返回 IndexedDB 数据库实例。
+     */
+    initDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(this.dbName, 1);
+            request.onupgradeneeded = () => {
+                const db = request.result;
+                if (!db.objectStoreNames.contains(this.storeName)) {
+                    db.createObjectStore(this.storeName, { keyPath: 'name' });
+                }
+            };
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    /**
+     * 将当前所有图片的 Blob 数据保存到 IndexedDB，用于跨页面刷新恢复。
+     * @returns {Promise<void>} 保存完成后不返回值。
+     */
+    async saveImagesToDB() {
+        try {
+            const db = await this.initDB();
+            const tx = db.transaction(this.storeName, 'readwrite');
+            const store = tx.objectStore(this.storeName);
+            store.clear();
+            for (const item of this.items) {
+                store.put({ name: item.file.name, blob: item.file, id: item.id });
+            }
+            tx.oncomplete = () => db.close();
+        } catch (e) {
+            // IndexedDB 不可用时静默失败
+        }
+    }
+
+    /**
+     * 从 IndexedDB 加载所有已保存的图片 Blob 数据。
+     * @returns {Promise<Array<{name: string, blob: Blob}>>} 返回图片数据数组。
+     */
+    async loadImagesFromDB() {
+        try {
+            const db = await this.initDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(this.storeName, 'readonly');
+                const store = tx.objectStore(this.storeName);
+                const request = store.getAll();
+                request.onsuccess = () => {
+                    db.close();
+                    resolve(request.result || []);
+                };
+                request.onerror = () => {
+                    db.close();
+                    reject(request.error);
+                };
+            });
+        } catch (e) {
+            return [];
+        }
+    }
+
+    /**
+     * 清空 IndexedDB 中的所有图片缓存数据。
+     * @returns {Promise<void>} 清空完成后不返回值。
+     */
+    async clearDB() {
+        try {
+            const db = await this.initDB();
+            const tx = db.transaction(this.storeName, 'readwrite');
+            tx.objectStore(this.storeName).clear();
+            tx.oncomplete = () => db.close();
+        } catch (e) {
+            // 清空失败时静默处理
         }
     }
 }
