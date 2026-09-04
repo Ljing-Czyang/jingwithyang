@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="theme-color" content="#ff9a9e">
+    <link rel="icon" href="favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <title>Our Memory</title>
     <link rel="stylesheet" href="src/styles/main.css" id="main-stylesheet">
     <link rel="stylesheet" href="lib/leaflet.css" />
@@ -27,7 +29,7 @@
         <!-- 侧边栏 -->
         <div class="sidebar" id="sidebar">
             <div class="user-info">
-                <div class="user-avatar">❤️</div>
+                <div class="user-avatar"><img src="avatar.png" alt="境和扬"></div>
                 <div>My Princess</div>
             </div>
             <ul class="menu-list">
@@ -125,6 +127,7 @@
                             <div class="lab-item" onclick="collageMaker.show()">🧩 组图工具</div>
                             <div class="lab-item" onclick="timePlanner.show()">⏰ 时间计划</div>
                             <div class="lab-item" onclick="accountBook.show()">💰 记账本</div>
+                            <div class="lab-item" onclick="shareCard.show()">💝 分享卡片</div>
                         </div>
                     </div>
                 </div>
@@ -174,6 +177,7 @@
     <script src="src/features/collage-maker/collage-maker.js"></script>
     <script src="src/features/time-planner/time-planner.js"></script>
     <script src="src/features/account-book/account-book.js"></script>
+    <script src="src/features/share-card/share-card.js"></script>
     <script src="src/app.js"></script>
 </body>
 </html>

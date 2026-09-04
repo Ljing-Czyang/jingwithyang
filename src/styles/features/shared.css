@@ -1,0 +1,252 @@
+/* ============================================================
+   功能模块共享润色 —— 统一交互语言
+   （渐变按钮 / 胶囊选态 / hover 反馈 / 弹窗与表单细节）
+   本文件在 main.css 中最后引入，仅做增量覆盖，
+   不改变各功能模块自身的主题配色。
+   ============================================================ */
+
+/* ---- 1. 弹窗遮罩：统一毛玻璃 ---- */
+.dice-modal,
+.todo-modal,
+.collage-modal,
+.tp-modal,
+.calendar-modal,
+.date-detail-modal,
+.date-murmur-input-modal,
+.date-photos-modal,
+.murmurs-modal,
+.ab-modal,
+.love-letters-modal,
+.heart-flip-modal,
+.photo-detail-modal,
+.upload-modal,
+.share-card-modal,
+.sidebar-overlay {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+/* ---- 2. 关闭按钮 ---- */
+/* 白底弹窗的灰色圆形关闭按钮：hover 变粉 + 旋转（与 modal-header-base 一致） */
+.dice-header button,
+.calendar-modal-header button,
+.date-detail-header button,
+.date-murmur-input-header button,
+.collage-header button,
+.photo-detail-header button,
+.upload-header button,
+.share-card-header button,
+.heart-flip-close {
+    transition: all 0.25s var(--ease);
+}
+
+.dice-header button:hover,
+.calendar-modal-header button:hover,
+.date-detail-header button:hover,
+.date-murmur-input-header button:hover,
+.collage-header button:hover,
+.photo-detail-header button:hover,
+.upload-header button:hover,
+.share-card-header button:hover,
+.heart-flip-close:hover {
+    background: rgba(255, 107, 129, 0.15);
+    color: var(--primary-color);
+    transform: rotate(90deg);
+}
+
+/* 渐变头部上的白色关闭按钮：hover 统一补旋转反馈 */
+.ab-close,
+.murmurs-close,
+.tp-close,
+.todo-close {
+    transition: all 0.25s var(--ease);
+}
+
+.ab-close:hover,
+.murmurs-close:hover,
+.tp-close:hover,
+.todo-close:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: rotate(90deg);
+}
+
+/* ---- 3. 主操作按钮：统一过渡 + 按压回弹 ---- */
+.dice-roll-btn,
+.murmur-send-btn,
+.todo-add-btn,
+.tp-add-btn,
+.ab-add-btn,
+.submit-letter-btn,
+.write-letter-btn,
+.edit-letter-btn,
+.btn-upload,
+.btn-write-murmur,
+.btn-view-photos,
+.btn-cancel,
+.nav-btn,
+.collage-btn,
+.murmur-delete-btn,
+.todo-delete-btn,
+.tp-edit-btn,
+.tp-delete-btn {
+    transition: all 0.25s var(--ease);
+}
+
+.dice-roll-btn:active:not(:disabled),
+.murmur-send-btn:active:not(:disabled),
+.todo-add-btn:active:not(:disabled),
+.tp-add-btn:active:not(:disabled),
+.ab-add-btn:active:not(:disabled),
+.submit-letter-btn:active:not(:disabled),
+.write-letter-btn:active:not(:disabled),
+.edit-letter-btn:active:not(:disabled),
+.btn-upload:active:not(:disabled),
+.btn-write-murmur:active:not(:disabled),
+.btn-view-photos:active:not(:disabled),
+.btn-cancel:active:not(:disabled),
+.nav-btn:active:not(:disabled),
+.collage-btn:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+/* ---- 4. 胶囊选态：筛选 / 分类 / 类型按钮 ---- */
+.filter-btn,
+.ab-type-btn,
+.ab-cat-btn,
+.ab-month-btn,
+.tp-task-btn {
+    transition: all 0.25s var(--ease);
+}
+
+.filter-btn:active,
+.ab-type-btn:active,
+.ab-cat-btn:active,
+.ab-month-btn:active,
+.tp-task-btn:active {
+    transform: scale(0.96);
+}
+
+/* 相册筛选选中态：纯色 -> 品牌渐变 + 粉色投影 */
+.filter-btn.active {
+    background: var(--primary-gradient);
+    box-shadow: 0 4px 12px rgba(255, 107, 129, 0.30);
+}
+
+/* ---- 5. 表单焦点环（保持各模块主色） ---- */
+/* 紫色系模块（碎碎念 / 信件 / 时间计划 / 日历碎碎念） */
+.murmur-input:focus,
+.write-input:focus,
+.write-textarea:focus,
+.tp-input:focus,
+.tp-date-input:focus,
+.date-murmur-input-body .murmur-input:focus {
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+}
+
+/* 粉色系模块（愿望清单 / 日历上传） */
+.todo-input:focus {
+    box-shadow: 0 0 0 4px rgba(240, 147, 251, 0.18);
+}
+
+.upload-input:focus,
+.upload-textarea:focus {
+    box-shadow: 0 0 0 4px rgba(255, 107, 129, 0.15);
+}
+
+/* 青色系记账本 */
+.ab-amount-input:focus,
+.ab-date-input:focus,
+.ab-note-input:focus {
+    box-shadow: 0 0 0 4px rgba(0, 206, 201, 0.15);
+}
+
+/* ---- 6. 滚动区域：统一细滚动条 ---- */
+.ab-body,
+.tp-body,
+.todo-list,
+.murmurs-timeline,
+.album-content,
+.photo-detail-content,
+.upload-content,
+.calendar-modal-content,
+.date-detail-content,
+.date-murmur-input-content,
+.date-photos-content,
+.collage-content,
+.dice-content,
+.heart-flip-content,
+.book-selection-view,
+.book-pages-wrapper,
+.write-letter-view,
+.write-textarea,
+.travel-map-sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 107, 129, 0.30) transparent;
+}
+
+.ab-body::-webkit-scrollbar,
+.tp-body::-webkit-scrollbar,
+.todo-list::-webkit-scrollbar,
+.murmurs-timeline::-webkit-scrollbar,
+.album-content::-webkit-scrollbar,
+.photo-detail-content::-webkit-scrollbar,
+.upload-content::-webkit-scrollbar,
+.calendar-modal-content::-webkit-scrollbar,
+.date-detail-content::-webkit-scrollbar,
+.date-murmur-input-content::-webkit-scrollbar,
+.date-photos-content::-webkit-scrollbar,
+.collage-content::-webkit-scrollbar,
+.dice-content::-webkit-scrollbar,
+.heart-flip-content::-webkit-scrollbar,
+.book-selection-view::-webkit-scrollbar,
+.book-pages-wrapper::-webkit-scrollbar,
+.write-letter-view::-webkit-scrollbar,
+.write-textarea::-webkit-scrollbar,
+.travel-map-sidebar::-webkit-scrollbar {
+    width: 5px;
+}
+
+.ab-body::-webkit-scrollbar-track,
+.tp-body::-webkit-scrollbar-track,
+.todo-list::-webkit-scrollbar-track,
+.murmurs-timeline::-webkit-scrollbar-track,
+.album-content::-webkit-scrollbar-track,
+.photo-detail-content::-webkit-scrollbar-track,
+.upload-content::-webkit-scrollbar-track,
+.calendar-modal-content::-webkit-scrollbar-track,
+.date-detail-content::-webkit-scrollbar-track,
+.date-murmur-input-content::-webkit-scrollbar-track,
+.date-photos-content::-webkit-scrollbar-track,
+.collage-content::-webkit-scrollbar-track,
+.dice-content::-webkit-scrollbar-track,
+.heart-flip-content::-webkit-scrollbar-track,
+.book-selection-view::-webkit-scrollbar-track,
+.book-pages-wrapper::-webkit-scrollbar-track,
+.write-letter-view::-webkit-scrollbar-track,
+.write-textarea::-webkit-scrollbar-track,
+.travel-map-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ab-body::-webkit-scrollbar-thumb,
+.tp-body::-webkit-scrollbar-thumb,
+.todo-list::-webkit-scrollbar-thumb,
+.murmurs-timeline::-webkit-scrollbar-thumb,
+.album-content::-webkit-scrollbar-thumb,
+.photo-detail-content::-webkit-scrollbar-thumb,
+.upload-content::-webkit-scrollbar-thumb,
+.calendar-modal-content::-webkit-scrollbar-thumb,
+.date-detail-content::-webkit-scrollbar-thumb,
+.date-murmur-input-content::-webkit-scrollbar-thumb,
+.date-photos-content::-webkit-scrollbar-thumb,
+.collage-content::-webkit-scrollbar-thumb,
+.dice-content::-webkit-scrollbar-thumb,
+.heart-flip-content::-webkit-scrollbar-thumb,
+.book-selection-view::-webkit-scrollbar-thumb,
+.book-pages-wrapper::-webkit-scrollbar-thumb,
+.write-letter-view::-webkit-scrollbar-thumb,
+.write-textarea::-webkit-scrollbar-thumb,
+.travel-map-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 107, 129, 0.28);
+    border-radius: 3px;
+}
