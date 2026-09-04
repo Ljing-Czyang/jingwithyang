@@ -1,9 +1,23 @@
 :root {
     --primary-color: #ff6b81;
+    --primary-soft: #ff8fab;
+    --primary-gradient: linear-gradient(135deg, #ff6b81 0%, #ff8fab 100%);
     --accent-color: #a29bfe;
     --text-color: #2d3436;
+    --text-secondary: #636e72;
+    --text-muted: #b2bec3;
     --sidebar-bg: #2d3436;
     --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    --card-bg: #f8f9fa;
+    --border-color: #f0f0f0;
+    --radius-sm: 10px;
+    --radius-md: 15px;
+    --radius-lg: 20px;
+    --shadow-sm: 0 2px 8px rgba(45, 52, 54, 0.06);
+    --shadow-md: 0 6px 18px rgba(45, 52, 54, 0.10);
+    --shadow-lg: 0 12px 32px rgba(45, 52, 54, 0.14);
+    --shadow-pink: 0 8px 20px rgba(255, 107, 129, 0.30);
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -11,8 +25,13 @@
     -webkit-touch-callout: none;
 }
 
+::selection {
+    background: rgba(255, 107, 129, 0.25);
+    color: var(--text-color);
+}
+
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Roboto, Helvetica, Arial, sans-serif;
     background: var(--bg-gradient);
     margin: 0;
     height: 100vh;
@@ -23,6 +42,18 @@ body {
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input {
+    font-family: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid rgba(255, 107, 129, 0.6);
+    outline-offset: 2px;
 }
 
 .app-container {
@@ -40,6 +71,42 @@ body {
         width: 375px; max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); max-height: 800px;
         border-radius: 30px; border: 8px solid #333;
     }
+}
+
+/* ---- 细滚动条（桌面端可见，贴合主题色） ---- */
+.scroll-content,
+.menu-list,
+.modal-content-base {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 107, 129, 0.35) transparent;
+}
+
+.scroll-content::-webkit-scrollbar,
+.menu-list::-webkit-scrollbar,
+.modal-content-base::-webkit-scrollbar {
+    width: 5px;
+}
+
+.scroll-content::-webkit-scrollbar-track,
+.menu-list::-webkit-scrollbar-track,
+.modal-content-base::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scroll-content::-webkit-scrollbar-thumb,
+.modal-content-base::-webkit-scrollbar-thumb {
+    background: rgba(255, 107, 129, 0.30);
+    border-radius: 3px;
+}
+
+.menu-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 3px;
+}
+
+.scroll-content::-webkit-scrollbar-thumb:hover,
+.modal-content-base::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 107, 129, 0.55);
 }
 
 @keyframes fadeIn {
@@ -64,4 +131,38 @@ body {
 @keyframes diceBounce {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.2); }
+}
+
+/* 爱心上浮（登录页 / 计时卡装饰） */
+@keyframes floatHeart {
+    0% { transform: translateY(0) scale(0.6) rotate(-8deg); opacity: 0; }
+    15% { opacity: 0.7; }
+    100% { transform: translateY(-120px) scale(1.1) rotate(10deg); opacity: 0; }
+}
+
+/* 时间线末节点呼吸 */
+@keyframes nodePulse {
+    0%, 100% { box-shadow: 0 0 0 2px var(--accent-color), 0 0 0 0 rgba(162, 155, 254, 0.5); }
+    50% { box-shadow: 0 0 0 2px var(--accent-color), 0 0 0 7px rgba(162, 155, 254, 0); }
+}
+
+/* 计时卡数字心跳 */
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    12% { transform: scale(1.06); }
+    24% { transform: scale(1); }
+}
+
+/* 下滑提示箭头 */
+@keyframes hintBounce {
+    0%, 100% { transform: translateY(0); opacity: 0.9; }
+    50% { transform: translateY(3px); opacity: 0.55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }

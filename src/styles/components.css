@@ -1,13 +1,28 @@
 .btn-primary {
-    background: var(--primary-color);
+    background: var(--primary-gradient);
     color: white;
     border: none;
     padding: 12px 30px;
     border-radius: 25px;
     font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 1px;
     width: 100%;
     margin-top: 10px;
     cursor: pointer;
+    box-shadow: 0 6px 16px rgba(255, 107, 129, 0.35);
+    transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), filter 0.2s var(--ease);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(255, 107, 129, 0.45);
+    filter: brightness(1.04);
+}
+
+.btn-primary:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 4px 10px rgba(255, 107, 129, 0.30);
 }
 
 .btn-upload-photo {
@@ -19,13 +34,17 @@
     font-size: 14px;
     width: 100%;
     cursor: pointer;
-    transition: 0.2s;
+    transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
     font-weight: 600;
 }
 
 .btn-upload-photo:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(255, 107, 129, 0.3);
+}
+
+.btn-upload-photo:active {
+    transform: translateY(0) scale(0.98);
 }
 
 .btn-delete-photo {
@@ -36,6 +55,16 @@
     border-radius: 20px;
     cursor: pointer;
     font-size: 14px;
+    transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), filter 0.2s var(--ease);
+}
+
+.btn-delete-photo:hover {
+    filter: brightness(1.06);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.35);
+}
+
+.btn-delete-photo:active {
+    transform: scale(0.97);
 }
 
 .modal-base {
@@ -44,7 +73,9 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
+    background: rgba(45, 52, 54, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -62,6 +93,7 @@
     max-height: calc(100dvh - 32px);
     overflow-y: auto;
     animation: slideUp 0.3s;
+    box-shadow: var(--shadow-lg);
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
 }
@@ -79,6 +111,7 @@
     margin: 0;
     color: var(--primary-color);
     font-size: 18px;
+    letter-spacing: 0.5px;
 }
 
 .modal-header-base button {
@@ -89,11 +122,14 @@
     border-radius: 50%;
     cursor: pointer;
     font-size: 18px;
+    line-height: 1;
     transition: 0.2s;
 }
 
 .modal-header-base button:hover {
-    background: #e0e0e0;
+    background: rgba(255, 107, 129, 0.15);
+    color: var(--primary-color);
+    transform: rotate(90deg);
 }
 
 .timer-card {
@@ -104,22 +140,57 @@
     text-align: center;
     margin: 20px;
     box-shadow: 0 10px 20px rgba(255, 117, 140, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 顶部柔光 */
+.timer-card::before {
+    content: '';
+    position: absolute;
+    top: -40%;
+    left: -20%;
+    width: 140%;
+    height: 80%;
+    background: radial-gradient(ellipse at center, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 70%);
+    pointer-events: none;
+}
+
+/* 角落装饰爱心 */
+.timer-card::after {
+    content: '❤';
+    position: absolute;
+    right: 14px;
+    bottom: 10px;
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.55);
+    animation: heartbeat 2.4s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.timer-card p {
+    letter-spacing: 2px;
+    opacity: 0.95;
 }
 
 .timer-card h1 {
     margin: 10px 0;
     font-size: 3em;
+    line-height: 1.1;
+    text-shadow: 0 3px 10px rgba(214, 48, 90, 0.35);
+    animation: heartbeat 2.4s ease-in-out infinite;
 }
 
 .typewriter-box {
-    background: #fff0f6;
+    background: linear-gradient(160deg, #fff0f6 0%, #fff8fb 100%);
     padding: 20px;
     border-radius: 15px;
     border: 2px dashed var(--primary-color);
     min-height: 150px;
-    font-family: monospace;
+    font-family: "SF Mono", "Cascadia Code", Consolas, monospace;
     color: #e84393;
     line-height: 1.6;
+    box-shadow: var(--shadow-sm);
 }
 
 .cursor {
@@ -138,11 +209,11 @@
         -webkit-transform: translateZ(0);
         transform: translateZ(0);
     }
-    
+
     .timer-card h1 {
         font-size: 3em;
     }
-    
+
     .modal-content-base {
         width: 95%;
         max-width: 350px;
@@ -158,12 +229,12 @@
         max-height: calc(100dvh - 48px);
         border-radius: 15px;
     }
-    
+
     .modal-header-base {
         margin-bottom: 15px;
         padding-bottom: 12px;
     }
-    
+
     .modal-header-base h3 {
         font-size: 16px;
     }

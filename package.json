@@ -1,0 +1,9 @@
+{
+  "name": "our-memory",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Our Memory - 境和扬的专属空间（纯静态页面，零依赖）",
+  "scripts": {
+    "dev": "node dev-server.js"
+  }
+}

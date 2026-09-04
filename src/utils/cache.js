@@ -8,7 +8,9 @@ class CacheManager {
                     return data;
                 }
             }
-        } catch (e) {}
+        } catch (e) {
+            console.warn('CacheManager.load 读取缓存失败:', e);
+        }
         return null;
     }
 
@@ -18,12 +20,16 @@ class CacheManager {
                 data: data,
                 timestamp: Date.now()
             }));
-        } catch (e) {}
+        } catch (e) {
+            console.warn('CacheManager.save 写入缓存失败（可能存储空间已满）:', e);
+        }
     }
 
     static remove(key) {
         try {
             localStorage.removeItem(key);
-        } catch (e) {}
+        } catch (e) {
+            console.warn('CacheManager.remove 删除缓存失败:', e);
+        }
     }
 }

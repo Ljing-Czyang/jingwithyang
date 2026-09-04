@@ -84,7 +84,7 @@ class StorageManager {
             ImageUtils.validateFile(file, { maxSize: options.maxSize });
         }
 
-        const photoId = `photo_${Date.now()}`;
+        const photoId = `photo_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
         const info = CONFIG.users[uploader] || CONFIG.users.jing;
 
         if (this.isUsingSupabase()) {
